@@ -15,41 +15,30 @@ def getOptions():
 	options, _ = parser.parse_args()
 	return options
 
-options = getOptions()
-c = Config(options.configfile)
-
-
-
-bot = c.bot()
-realname = bot['realname']
-nick = bot['nick']
-altnick = bot.get('altnick', nick+"_")
-owner = bot['owner']
-
-modulelist = c.modules()
-
-serverlist = []
-serverd = c.servers()
-for k, v in serverd.iteritems():
-	serveralias = k
-	port = v.get('port', 6667)
-	hostname = v.get('hostname')
-	channellist = c.channels(serveralias)
-	print owner
-	sc = ServerConnection(hostname, port, nick, altnick, realname, realname, owner, channellist, serveralias)
+def main():
+	options = getOptions()
+	conf = Config(options.configfile)
+	modulelist = conf.modules()
+	bot = conf.bot()
+	serverlist = []
 	
-	sc.dynamicmodules = [DynamicModule(sc, m) for m in modulelist]
-	serverlist.append(sc)
+	for networkname, serverd in conf.servers().iteritems():
+		joinlist = conf.channels(networkname)
+		serverlist.append(
+			ServerConnection(networkname, serverd, bot, 
+							joinlist, modulelist))
 	
-	
-for s in serverlist:
-	s.connect()
-	
-while True:
-	try:
-		sleep(1.0)
-	except KeyboardInterrupt:
-		print ""
-		for s in serverlist:
-			s.kill()
-		break
+	for s in serverlist:
+		s.connect()
+		
+	while True:
+		try:
+			sleep(1.0)
+		except KeyboardInterrupt:
+			print ""
+			for s in serverlist:
+				s.kill()
+			break
+
+if __name__ == '__main__':
+	main()

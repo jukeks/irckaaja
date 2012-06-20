@@ -3,6 +3,7 @@ import time
 from threading import Thread
 from messageparser import MessageParser
 from channel import IrcChannel
+from dynamicmodule import DynamicModule
 
 # Source: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
 
@@ -11,19 +12,21 @@ class ServerConnection:
 	'''
 	Class handling irc servers.
 	'''
-	def __init__(self, hostname, port, nick, altnick, username, realname, owner, channels = None, server_alias = ""):
+	#def __init__(self, hostname, port, nick, altnick, username, realname, owner, channels = None, server_alias = ""):
+	def __init__(self, networkname, serverd, botd, joinlist, modulenames):
 		self.alive = True
 		self.connected = False
-		self.hostname = hostname
-		self.port = int(port)
-		self.nick = nick
-		self.altnick = altnick
-		self.username = username
-		self.realname = realname
-		self.owner = owner
+		self.hostname = serverd['hostname']
+		self.port = int(serverd.get('port', "6667"))
+		self.nick = botd['nick']
+		self.altnick = botd.get('altnick', self.nick + "_")
+		self.username = botd['username']
+		self.realname = botd['realname']
+		self.owner = botd['owner']
 		print self.owner
-		self.alias = server_alias if server_alias else hostname
-		self.joinList = [] if not channels else channels
+		self.networkname = networkname
+		
+		self.joinlist = joinlist
 		
 		self.readerThread = None
 		self.parser = MessageParser(self)
@@ -32,7 +35,7 @@ class ServerConnection:
 		
 		self.channelList = []
 		
-		self.dynamicmodules = []
+		self.dynamicmodules = [DynamicModule(self, m) for m in modulenames]
 		
 		
 	def connect(self):
@@ -122,7 +125,7 @@ class ServerConnection:
 		'''
 		Prints message with timestamp.
 		'''
-		print time.strftime("%H:%M:%S") + " |" + self.alias + "| "  + message
+		print time.strftime("%H:%M:%S") + " |" + self.networkname + "| "  + message
 
 	def NICK(self, nick):
 		'''
@@ -184,16 +187,16 @@ class ServerConnection:
 		
 	def joinChannels(self):
 		'''
-		Joins channels specified in self.joinList
+		Joins channels specified in self.joinlist
 		'''
-		for channel in self.joinList:
+		for channel in self.joinlist:
 			self.JOIN(channel)
 
 	def kill(self):
 		'''
 		Called when the thread is wanted dead.
 		'''
-		self.printLine(self.alias + " dying.")
+		self.printLine(self.networkname + " dying.")
 		self.alive = False
 		
 	def privateMessageReceived(self, source, message, fullmask):

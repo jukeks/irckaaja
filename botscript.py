@@ -1,7 +1,7 @@
 
 class BotScript:
 	'''
-	"Abstract" script class. Should be inherited in script classes.
+	"Abstract" script class. Should be inherited by script classes.
 	See HelloWorld in scripts.helloworld.py for example.
 	'''
 	def __init__(self, server_connection):
