@@ -1,5 +1,9 @@
 
 class BotScript:
+	'''
+	"Abstract" script class. Should be inherited in script classes.
+	See HelloWorld in scripts.helloworld.py for example.
+	'''
 	def __init__(self, server_connection):
 		self.server_connection = server_connection
 		
@@ -9,7 +13,7 @@ class BotScript:
 		# usage: self.JOIN(channelname)
 		self.JOIN = server_connection.JOIN
 		
-		#usage: self.PART(channelname)
+		#usage: self.PART(channelname, reason = "")
 		self.PART = server_connection.PART
 	
 	

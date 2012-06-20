@@ -1,6 +1,10 @@
 import re
 
 class MessageParser:
+	'''
+	Class handles irc messages and notifies server_connection
+	about them.
+	'''
 	def __init__(self, server_connection):
 		self._sc = server_connection
 
@@ -154,6 +158,9 @@ class MessageParser:
 		return True
 	
 	def parse(self, message):
+		'''
+		Tries to figure out what the message is.
+		'''
 		if self.checkForEndOfMotd(message): return
 		
 		if self.checkForPing(message): return

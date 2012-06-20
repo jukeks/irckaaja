@@ -2,6 +2,12 @@ from botscript import BotScript
 from dynamicmodule import DynamicModule
 
 class ModuleLoader(BotScript):
+	'''
+	A helper script for loading, reloading and unloading
+	modules dynamically on runtime. Makes developing scripts
+	much easier as the bot need to reconnect to irc network
+	between changes. 
+	'''
 	def onPrivateMessage(self, source, message, fullmask):
 		# authenticating
 		if fullmask != self.server_connection.owner:
