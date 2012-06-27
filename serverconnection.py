@@ -13,7 +13,7 @@ class ServerConnection:
 	Class handling irc servers.
 	'''
 	#def __init__(self, hostname, port, nick, altnick, username, realname, owner, channels = None, server_alias = ""):
-	def __init__(self, networkname, serverd, botd, joinlist, modulenames):
+	def __init__(self, networkname, serverd, botd, joinlist, modulesd):
 		self.alive = True
 		self.connected = False
 		self.hostname = serverd['hostname']
@@ -35,8 +35,8 @@ class ServerConnection:
 		
 		self.channelList = []
 		
-		self.dynamicmodules = [DynamicModule(self, m) for m in modulenames]
-		
+		self.dynamicmodules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
+		print self.dynamicmodules
 		
 	def connect(self):
 		'''
@@ -198,6 +198,8 @@ class ServerConnection:
 		'''
 		self.printLine(self.networkname + " dying.")
 		self.alive = False
+		for m in self.dynamicmodules:
+			m.instance.kill() 
 		
 	def privateMessageReceived(self, source, message, fullmask):
 		'''

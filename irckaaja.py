@@ -18,7 +18,7 @@ def getOptions():
 def main():
 	options = getOptions()
 	conf = Config(options.configfile)
-	modulelist = conf.modules()
+	modulesd = conf.modules()
 	bot = conf.bot()
 	serverlist = []
 	
@@ -26,7 +26,7 @@ def main():
 		joinlist = conf.channels(networkname)
 		serverlist.append(
 			ServerConnection(networkname, serverd, bot, 
-							joinlist, modulelist))
+							joinlist, modulesd))
 	
 	for s in serverlist:
 		s.connect()

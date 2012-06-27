@@ -4,7 +4,7 @@ class DynamicModule:
 	'''
 	This class holds Python scripts. 
 	'''
-	def __init__(self, server_connection, modulename):
+	def __init__(self, server_connection, modulename, config = None):
 		'''
 		Initialises and calls load().
 		
@@ -18,16 +18,17 @@ class DynamicModule:
 		self.module = None
 		self.classvar = None
 		self.instance = None
-		
+		self.moduleconfig = config
 		self.load()
 		
 	def reloadModule(self):
 		'''
 		Reloads the module, the class and overwrites the instance.
 		'''
+		self.instance.kill()
 		reload(self.module)
 		self.classvar = getattr(self.module, self.modulename)
-		self.instance = self.classvar(self.server_connection)
+		self.instance = self.classvar(self.server_connection, self.moduleconfig)
 
 	
 	def load(self):
@@ -38,4 +39,4 @@ class DynamicModule:
 		self.module = __import__('scripts.' + self.modulename.lower(), globals(), 
 								locals(), [self.modulename], -1)
 		self.classvar = getattr(self.module, self.modulename)
-		self.instance = self.classvar(self.server_connection)
+		self.instance = self.classvar(self.server_connection, self.moduleconfig)

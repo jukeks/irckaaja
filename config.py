@@ -18,10 +18,10 @@ class Config:
 	
 	def modules(self):
 		'''
-		Returns a listof  modules defined in the 
+		Returns a dictionary of  modules defined in the 
 		conf to be loaded.
 		'''
-		return self.bot()['modules']
+		return self.config['modules']
 	
 	def channels(self, servername):
 		'''

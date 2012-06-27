@@ -1,11 +1,14 @@
+import time
 
 class BotScript:
 	'''
 	"Abstract" script class. Should be inherited by script classes.
 	See HelloWorld in scripts.helloworld.py for example.
 	'''
-	def __init__(self, server_connection):
+	def __init__(self, server_connection, config):
 		self.server_connection = server_connection
+		self.config = config
+		self.alive = True
 		
 		# usage: self.PRIVMSG(target, message)
 		self.PRIVMSG = server_connection.PRIVMSG
@@ -17,6 +20,16 @@ class BotScript:
 		self.PART = server_connection.PART
 	
 	
+	def sleep(self, seconds):
+		'''
+		Sleeps for seconds unless not self.alive.
+		'''
+		start = time.time()
+		while time.time() < start + seconds and self.alive:
+			time.sleep(1)
+	
+	def kill(self):
+		self.alive = False
 	# Methods below can be implemented in your script class if you like.
 	# That way you can subscribe to those messages.
 	def onChannelMessage(self, nick, target, message, fullmask):
