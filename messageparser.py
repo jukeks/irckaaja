@@ -43,6 +43,8 @@ class MessageParser:
 		":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
 	
 	def checkForUsers(self, message):
+		# TODO WONT MATCH
+		":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
 		users_pattern = re.compile(r'''   
 					 ^:.*?\s			# server
 					 353\s				# users code
