@@ -10,3 +10,7 @@ Dependencies:
 
 configobj.py http://www.voidspace.org.uk/python/configobj.html
 Can be installed with easy_install configobj
+
+SVN Announcer depends on pysvn.
+
+For example scripts see botscript.py and scripts/helloworld.py
