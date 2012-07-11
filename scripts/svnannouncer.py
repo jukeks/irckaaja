@@ -1,6 +1,5 @@
 import pysvn
 import threading
-import time
 
 from botscript import BotScript
 
@@ -14,8 +13,8 @@ class SVNAnnouncer(BotScript, threading.Thread):
 		if not isinstance(self.targets, [].__class__):
 			self.targets = [self.targets]
 		
-		self.svnclient = pysvn.Client()
-		self.last_entry = self.svnclient.log(self.repository_path, limit = 1)[0]
+		self.svn_client = pysvn.Client()
+		self.last_entry = self.svn_client.log(self.repository_path, limit = 1)[0]
 		self.last_entry_time = self.last_entry.date
 		
 		self.start()
@@ -23,11 +22,12 @@ class SVNAnnouncer(BotScript, threading.Thread):
 		
 	def run(self):
 		while self.alive:
-			self.last_entry = self.svnclient.log(self.repository_path, limit = 1)[0]
+			self.last_entry = self.svn_client.log(self.repository_path, limit = 1)[0]
 			if self.last_entry.date != self.last_entry_time:
 				self.last_entry_time = self.last_entry.date
-				message = self.last_entry.author +" commited a change: " + self.last_entry.message
+				rev_n = self.last_entry.revision.number
+				message = "COMMIT #" + rev_n + " by " + self.last_entry.author + ": " + self.last_entry.message
 				for target in self.targets:
-					self.PRIVMSG(target, message)
-			
-			BotScript.sleep(self, 60)
+					self.say(target, message)
+
+			self.sleep(60)

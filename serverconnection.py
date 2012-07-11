@@ -28,15 +28,15 @@ class ServerConnection:
 		
 		self.joinlist = joinlist
 		
-		self.readerThread = None
+		self.reader_thread = None
 		self.parser = MessageParser(self)
 		
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		
 		self.channelList = []
 		
-		self.dynamicmodules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
-		print self.dynamicmodules
+		self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
+		print self.dynamic_modules
 		
 	def connect(self):
 		'''
@@ -49,9 +49,9 @@ class ServerConnection:
 				self.NICK(self.nick)
 				self.USER(self.username, self.realname)
 				
-				if not self.readerThread:
-					self.readerThread = Thread(target=self.read)
-					self.readerThread.start()
+				if not self.reader_thread:
+					self.reader_thread = Thread(target=self.read)
+					self.reader_thread.start()
 				else:
 					self.read()
 				break
@@ -65,6 +65,7 @@ class ServerConnection:
 		Initialises self.socket and tries reconnecting
 		in 60 seconds.
 		'''
+		self.connected = False
 		self.socket.close()
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.printLine("Trying again in 60 seconds.")
@@ -95,6 +96,7 @@ class ServerConnection:
 				return
 			except KeyboardInterrupt:
 				self.kill()
+				return
 				
 			if not self.alive:
 				break
@@ -179,7 +181,7 @@ class ServerConnection:
 		self.PING(self.hostname)
 		self.joinChannels()
 		
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onConnect()
 			except:
@@ -198,7 +200,7 @@ class ServerConnection:
 		'''
 		self.printLine(self.networkname + " dying.")
 		self.alive = False
-		for m in self.dynamicmodules:
+		for m in self.dynamic_modules:
 			m.instance.kill() 
 		
 	def privateMessageReceived(self, source, message, fullmask):
@@ -208,7 +210,7 @@ class ServerConnection:
 		'''
 		self.printLine("PRIVATE" + " <" + source + "> " + message)
 		
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onPrivateMessage(source, message, fullmask)
 			except:
@@ -221,7 +223,7 @@ class ServerConnection:
 		'''
 		self.printLine(channel + " <" + source + "> " + message)
 		
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onChannelMessage(source, channel, message, fullmask)
 			except:
@@ -294,7 +296,7 @@ class ServerConnection:
 			
 		self.printLine(nick + " has quit.")
 		
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onQuit(nick, fullmask)
 			except:
@@ -312,7 +314,7 @@ class ServerConnection:
 		
 		self.printLine(nick + " has part " + channelname)
 		
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onPart(nick, channelname, fullmask)
 			except:
@@ -329,7 +331,7 @@ class ServerConnection:
 		channel.addUser(nick)
 		
 		self.printLine(nick + " has joined " + channelname)
-		for dm in self.dynamicmodules:
+		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onJoin(nick, channelname, fullmask)
 			except:

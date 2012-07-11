@@ -10,14 +10,15 @@ class BotScript:
 		self.config = config
 		self.alive = True
 		
-		# usage: self.PRIVMSG(target, message)
-		self.PRIVMSG = server_connection.PRIVMSG
+
+		# usage: self.say(target, message)
+		self.say = server_connection.PRIVMSG
 		
-		# usage: self.JOIN(channelname)
-		self.JOIN = server_connection.JOIN
+		# usage: self.joinChannel(channel_name)
+		self.joinChannel = server_connection.JOIN
 		
-		#usage: self.PART(channelname, reason = "")
-		self.PART = server_connection.PART
+		#usage: self.partChannel(channel_name, reason = "")
+		self.partChannel = server_connection.PART
 	
 	
 	def sleep(self, seconds):
@@ -30,40 +31,42 @@ class BotScript:
 	
 	def kill(self):
 		self.alive = False
+
+
 	# Methods below can be implemented in your script class if you like.
 	# That way you can subscribe to those messages.
-	def onChannelMessage(self, nick, target, message, fullmask):
+	def onChannelMessage(self, nick, target, message, full_mask):
 		'''
-		Is called when a channel message is received.
-		'''
-		pass
-	
-	def onPrivateMessage(self, nick, message, fullmask):
-		'''
-		Is called when a private message is received.
+		Called when a channel message is received.
 		'''
 		pass
 	
-	def onJoin(self, nick, channelname, fullmask):
+	def onPrivateMessage(self, nick, message, full_mask):
 		'''
-		Is called when a user joins a channel.
-		'''
-		pass
-	
-	def onPart(self, nick, channelname, fullmask):
-		'''
-		Is called when a user parts a channel.
+		Called when a private message is received.
 		'''
 		pass
 	
-	def onQuit(self, nick, fullmask):
+	def onJoin(self, nick, channel_name, full_mask):
 		'''
-		Is called when a user quits the network.
+		Called when a user joins a channel.
+		'''
+		pass
+	
+	def onPart(self, nick, channel_name, full_mask):
+		'''
+		Called when a user parts a channel.
+		'''
+		pass
+	
+	def onQuit(self, nick, full_mask):
+		'''
+		Called when a user quits the network.
 		'''
 		pass
 	
 	def onConnect(self):
 		'''
-		Is called when bot has connected to the network.
+		Called when bot has connected to the network.
 		'''
 		pass

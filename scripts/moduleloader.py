@@ -8,9 +8,9 @@ class ModuleLoader(BotScript):
 	much easier as the bot need to reconnect to irc network
 	between changes. 
 	'''
-	def onPrivateMessage(self, source, message, fullmask):
+	def onPrivateMessage(self, source, message, full_mask):
 		# authenticating
-		if fullmask != self.server_connection.owner:
+		if full_mask != self.server_connection.owner:
 			return
 		
 		# checking if we got a relevant message
@@ -21,26 +21,26 @@ class ModuleLoader(BotScript):
 					
 			if self.tryUnload(source, message): return
 		except Exception as e:
-			self.PRIVMSG(source, "error: " + str(e))
+			self.say(source, "error: " + str(e))
 
 
 	def tryLoad(self, source, message):
 		if not message.startswith("!load"):
 			return False
 			
-		modulename = message.replace("!load ", "")
+		module_name = message.replace("!load ", "")
 		
 		# Not loading if it's already loaded
 		for dm in self.server_connection.dynamicmodules:
-			if dm.modulename == modulename:
-				self.PRIVMSG(source, "module " + str(dm.classvar) + " already loaded")
+			if dm.module_name == module_name:
+				self.say(source, "module " + str(dm.classvar) + " already loaded")
 				return True
 		
 		# Loading and appending to the list
-		dm = DynamicModule(self.server_connection, modulename)
+		dm = DynamicModule(self.server_connection, module_name)
 		self.server_connection.dynamicmodules.append(dm)
 			
-		self.PRIVMSG(source, "loaded " + str(dm.classvar))
+		self.say(source, "loaded " + str(dm.classvar))
 		return True	
 
 
@@ -48,20 +48,20 @@ class ModuleLoader(BotScript):
 		if not message.startswith("!reload"):
 			return False
 		
-		modulename = message.replace("!reload ", "")
+		module_name = message.replace("!reload ", "")
 		
 		# finding the module to reload
 		for dm in self.server_connection.dynamicmodules:
-			if dm.modulename != modulename:
+			if dm.module_name != module_name:
 				continue
 			
 			dm.reloadModule()
-			self.PRIVMSG(source, "reloaded " + str(dm.classvar))
+			self.say(source, "reloaded " + str(dm.classvar))
 			return True
 		
 		
 		# didn't find it
-		self.PRIVMSG(source, "unable to find module with name " + modulename)
+		self.say(source, "unable to find module with name " + module_name)
 		return True
 	
 	
@@ -69,20 +69,20 @@ class ModuleLoader(BotScript):
 		if not message.startswith("!unload"):
 			return False
 		
-		modulename = message.replace("!unload ", "")
+		module_name = message.replace("!unload ", "")
 		
 		# finding the module in the list by name
 		for dm in self.server_connection.dynamicmodules:
-			if dm.modulename != modulename:
+			if dm.module_name != module_name:
 				continue
 			
 			# unloading
 			self.server_connection.dynamicmodules.remove(dm)
-			self.PRIVMSG(source, "unloaded  " + str(dm.classvar))
+			self.say(source, "unloaded  " + str(dm.classvar))
 			del dm
 			return True
 			
 		# module was not found
-		self.PRIVMSG(source, "unable to find module with name " + modulename)
+		self.say(source, "unable to find module with name " + module_name)
 		return True
 	
