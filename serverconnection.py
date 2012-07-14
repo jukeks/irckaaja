@@ -66,7 +66,6 @@ class ServerConnection:
 		Initialises self.socket and tries reconnecting
 		in 60 seconds.
 		'''
-		self.connected = False
 		self.socket.close()
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.printLine("Trying again in 60 seconds.")
@@ -92,6 +91,7 @@ class ServerConnection:
 			except socket.timeout as e:
 				continue
 			except socket.error as e:
+				self.connected = False
 				self.printLine(str(e))
 				self.connectAgain()
 				return
@@ -103,6 +103,7 @@ class ServerConnection:
 				break
 			
 			if not tmp:
+				self.connected = False
 				self.printLine("Connection closed.")
 				self.connectAgain()
 				return
@@ -284,6 +285,7 @@ class ServerConnection:
 		'''
 		channel = self.findChannelByName(channelname)
 		if not channel:
+			# TODO FIX
 			return
 
 		channel.usersMessageEnd()
