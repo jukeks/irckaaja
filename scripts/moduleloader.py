@@ -16,9 +16,9 @@ class ModuleLoader(BotScript):
 		# checking if we got a relevant message
 		try:
 			if self.tryLoad(source, message): return
-				
+
 			if self.tryReload(source, message): return
-					
+
 			if self.tryUnload(source, message): return
 		except Exception as e:
 			self.say(source, "error: " + str(e))
@@ -31,14 +31,14 @@ class ModuleLoader(BotScript):
 		module_name = message.replace("!load ", "")
 		
 		# Not loading if it's already loaded
-		for dm in self.server_connection.dynamicmodules:
+		for dm in self.server_connection.dynamic_modules:
 			if dm.module_name == module_name:
 				self.say(source, "module " + str(dm.classvar) + " already loaded")
 				return True
-		
+
 		# Loading and appending to the list
-		dm = DynamicModule(self.server_connection, module_name)
-		self.server_connection.dynamicmodules.append(dm)
+		dm = DynamicModule(self.server_connection, module_name, self.server_connection.modulesd[module_name])
+		self.server_connection.dynamic_modules.append(dm)
 			
 		self.say(source, "loaded " + str(dm.classvar))
 		return True	
@@ -51,7 +51,7 @@ class ModuleLoader(BotScript):
 		module_name = message.replace("!reload ", "")
 		
 		# finding the module to reload
-		for dm in self.server_connection.dynamicmodules:
+		for dm in self.server_connection.dynamic_modules:
 			if dm.module_name != module_name:
 				continue
 			
@@ -72,12 +72,12 @@ class ModuleLoader(BotScript):
 		module_name = message.replace("!unload ", "")
 		
 		# finding the module in the list by name
-		for dm in self.server_connection.dynamicmodules:
+		for dm in self.server_connection.dynamic_modules:
 			if dm.module_name != module_name:
 				continue
 			
 			# unloading
-			self.server_connection.dynamicmodules.remove(dm)
+			self.server_connection.dynamic_modules.remove(dm)
 			self.say(source, "unloaded  " + str(dm.classvar))
 			del dm
 			return True

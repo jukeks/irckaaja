@@ -34,7 +34,8 @@ class ServerConnection:
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		
 		self.channelList = []
-		
+
+		self.modulesd = modulesd
 		self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
 		print self.dynamic_modules
 		

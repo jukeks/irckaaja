@@ -14,11 +14,11 @@ class DynamicModule:
 		instance: instance of classvar
 		'''
 		self.server_connection = server_connection
-		self.modulename = modulename
+		self.module_name = modulename
 		self.module = None
 		self.classvar = None
 		self.instance = None
-		self.moduleconfig = config
+		self.module_config = config
 		self.load()
 		
 	def reloadModule(self):
@@ -27,8 +27,8 @@ class DynamicModule:
 		'''
 		self.instance.kill()
 		reload(self.module)
-		self.classvar = getattr(self.module, self.modulename)
-		self.instance = self.classvar(self.server_connection, self.moduleconfig)
+		self.classvar = getattr(self.module, self.module_name)
+		self.instance = self.classvar(self.server_connection, self.module_config)
 
 	
 	def load(self):
@@ -36,7 +36,7 @@ class DynamicModule:
 		Tries to load a class in a module in the scripts folder.
 		Module should be named <ClassName>.lower().
 		'''
-		self.module = __import__('scripts.' + self.modulename.lower(), globals(), 
-								locals(), [self.modulename], -1)
-		self.classvar = getattr(self.module, self.modulename)
-		self.instance = self.classvar(self.server_connection, self.moduleconfig)
+		self.module = __import__('scripts.' + self.module_name.lower(), globals(),
+								locals(), [self.module_name], -1)
+		self.classvar = getattr(self.module, self.module_name)
+		self.instance = self.classvar(self.server_connection, self.module_config)
