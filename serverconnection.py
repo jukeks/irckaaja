@@ -283,6 +283,9 @@ class ServerConnection:
 		Notifies the channel instance.
 		'''
 		channel = self.findChannelByName(channelname)
+		if not channel:
+			return
+
 		channel.usersMessageEnd()
 		self.printLine("USERS OF " + channelname)
 		self.printLine(" ".join(channel.userlist))
