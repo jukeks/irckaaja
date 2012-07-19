@@ -283,6 +283,7 @@ class ServerConnection:
 		channel = self.findChannelByName(channelname)
 		if not channel:
 			# TODO FIX
+			print "REPORT THIS: usersEndReceived, channel not found"
 			return
 
 		channel.usersMessageEnd()
