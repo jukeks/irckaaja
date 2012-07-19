@@ -8,7 +8,7 @@ class MessageParser:
 	def __init__(self, server_connection):
 		self._sc = server_connection
 
-	def checkForPrivmsg(self, message):
+	def _checkForPrivmsg(self, message):
 		":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
 		privmsg_pattern = re.compile(r'''   # full host mask (1)
 					 ^:((.*?)				# nick (2)
@@ -39,10 +39,10 @@ class MessageParser:
 		
 		return True
 	
-	def checkForNickInUse(self, message):
+	def _checkForNickInUse(self, message):
 		":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
 	
-	def checkForUsers(self, message):
+	def _checkForUsers(self, message):
 		# TODO WONT MATCH
 		":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
 		users_pattern = re.compile(r'''   
@@ -62,7 +62,7 @@ class MessageParser:
 		self._sc.usersReceived(channel, userlist)
 		return True
 	
-	def checkForUsersEnd(self, message):
+	def _checkForUsersEnd(self, message):
 		users_pattern = re.compile(r'''   
 					 ^:.*?\s			# server
 					 366\s				# users end code
@@ -79,7 +79,7 @@ class MessageParser:
 		self._sc.usersEndReceived(channel)
 		return True
 		
-	def checkForPing(self, message):
+	def _checkForPing(self, message):
 		if not message.startswith("PING"):
 			return False
 		
@@ -87,7 +87,7 @@ class MessageParser:
 		self._sc.pingReceived(message)
 		return True
 	
-	def checkForEndOfMotd(self, message):
+	def _checkForEndOfMotd(self, message):
 		motd_pattern = re.compile(r''' 
 									^:		  # start and :
 									.*?\s	  # server hostname
@@ -100,7 +100,7 @@ class MessageParser:
 		self._sc.motdReceived(message)
 		return True
 	
-	def checkForQuit(self, message):
+	def _checkForQuit(self, message):
 		":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net QUIT :Signed off" 
 		quit_pattern = re.compile(r''' 			# fullmask (1)
 								 ^:((.*?)		# nick (2)
@@ -118,7 +118,7 @@ class MessageParser:
 		self._sc.quitReceived(name, fullmask)
 		return True
 	
-	def checkForPart(self, message):
+	def _checkForPart(self, message):
 		":godlRmue!~Olog@lekvam.no PART #day9tv"
 		part_pattern = re.compile(r''' 			# fullmask (1)
 								 ^:((.*?)		# nick (2)
@@ -138,10 +138,10 @@ class MessageParser:
 		self._sc.partReceived(name, channel, fullmask)
 		return True
 		
-	def checkForJoin(self, message):
+	def _checkForJoin(self, message):
 		#message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
 		":imsopure!webchat@p50803C58.dip.t-dialin.net JOIN :#joindota"
-		join_pattern = re.compile(r''' 				# fullmask (1)
+		join_pattern = re.compile(r''' 					# fullmask (1)
 								 ^:((.*?)				# nick (2)
 								 \!(.*?)			 	# username (3)
 								 @(.*?))\s			 	# hostname (4)
@@ -163,18 +163,18 @@ class MessageParser:
 		'''
 		Tries to figure out what the message is.
 		'''
-		if self.checkForEndOfMotd(message): return
+		if self._checkForEndOfMotd(message): return
 		
-		if self.checkForPing(message): return
+		if self._checkForPing(message): return
 		
-		if self.checkForPrivmsg(message): return
+		if self._checkForPrivmsg(message): return
 		
-		if self.checkForUsers(message): return
-		if self.checkForUsersEnd(message): return
+		if self._checkForUsers(message): return
+		if self._checkForUsersEnd(message): return
 		
-		if self.checkForJoin(message): return
-		if self.checkForPart(message): return
-		if self.checkForQuit(message): return
+		if self._checkForJoin(message): return
+		if self._checkForPart(message): return
+		if self._checkForQuit(message): return
 		
 		#if self.checkForError(message) : return
 		
