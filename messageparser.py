@@ -157,6 +157,47 @@ class MessageParser:
 
 		self._sc.joinReceived(name, channel, fullmask)
 		return True
+
+	def _checkForTopicReply(self, message):
+		":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
+		topic_reply_pattern = re.compile(r'''
+										 ^:.*?\s			# server
+										 332\s				# topic reply code
+										 (.*?)\s			# nick (1)
+										 ([\#|\!].*?)\s		# channel (2)
+										 :(.*)				# topic (3)
+										 ''', re.X)
+
+		match = topic_reply_pattern.match(message)
+		if not match: return False
+
+		nick = match.group(1)
+		channelname = match.group(2)
+		topic = match.group(3)
+
+		self._sc.topicReplyReceived(nick, channelname, topic)
+		return True
+
+	def _checkForTopic(self, message):
+		":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"
+		topic_pattern = re.compile(r''' 				# fullmask (1)
+								 ^:((.*?)				# nick (2)
+								 \!(.*?)			 	# username (3)
+								 @(.*?))\s			 	# hostname (4)
+								 TOPIC\s:?			    # message type
+								 ([\#|\!].*.?)\s		# channel (5)
+								 :(.*.?)				# topic (6)
+								 ''', re.X)
+		match = topic_pattern.match(message)
+		if not match: return False
+
+		fullmask = match.group(1)
+		nick = match.group(2)
+		channelname = match.group(5)
+		topic = match.group(6)
+
+		self._sc.topicReceived(nick, channelname, topic, fullmask)
+		return True
 	
 	def parse(self, message):
 		'''
@@ -174,6 +215,9 @@ class MessageParser:
 		if self._checkForJoin(message): return
 		if self._checkForPart(message): return
 		if self._checkForQuit(message): return
+
+		if self._checkForTopic(message): return
+		if self._checkForTopicReply(message): return
 		
 		#if self.checkForError(message) : return
 		

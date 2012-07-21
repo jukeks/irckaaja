@@ -8,6 +8,7 @@ class IrcChannel:
 		self.name = name
 		self.userlist = userlist
 		self.userlist_complete = True
+		self.topic = ""
 		
 	def usersMessage(self, userlist):
 		'''

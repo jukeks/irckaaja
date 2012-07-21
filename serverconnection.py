@@ -330,16 +330,43 @@ class ServerConnection:
 		onJoin() on DynamicModules
 		'''
 		channel = self.findChannelByName(channelname)
-		if not channel: return
-		
-		channel.addUser(nick)
+		if channel:
+			channel.addUser(nick)
 		
 		self._printLine(nick + " has joined " + channelname)
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onJoin(nick, channelname, fullmask)
-			except:
+			except Exception:
 				pass
+
+	def topicReceived(self, nick, channelname, topic, fullmask):
+		'''
+		Called when topic is changed on a channel. Calls onTopic()
+		on DynamicModules
+		'''
+		channel = self.findChannelByName(channelname)
+		if channel:
+			channel.topic = topic
+
+		self._printLine(nick + " changed the topic of " + channelname + " to: " + topic)
+		for dm in self.dynamic_modules:
+			try:
+				dm.instance.onTopic(nick, channelname, topic, fullmask)
+			except Exception:
+				pass
+
+	def topicReplyReceived(self, nick, channelname, topic):
+		'''
+		Called when server responds to client's /topic or server informs
+		of the topic on joined channel.
+		'''
+		channel = self.findChannelByName(channelname)
+		if channel:
+			channel.topic = topic
+
+		self._printLine("Topic in " + channelname + ": " + topic)
+
 	
 	def unknownMessageReceived(self, message):
 		self._printLine(message)
