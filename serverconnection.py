@@ -183,8 +183,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onConnect()
-			except:
-				pass
+			except Exception as e:
+				print e
 		
 	def joinChannels(self):
 		'''
@@ -212,8 +212,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onPrivateMessage(source, message, fullmask)
-			except:
-				pass	
+			except Exception as e:
+				print e
 	
 	def channelMessageReceived(self, source, channel, message, fullmask):
 		'''
@@ -225,8 +225,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onChannelMessage(source, channel, message, fullmask)
-			except:
-				pass
+			except Exception as e:
+				print e
 	
 	def pingReceived(self, message):
 		'''
@@ -303,8 +303,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onQuit(nick, fullmask)
-			except:
-				pass
+			except Exception as e:
+				print e
 	
 	def partReceived(self, nick, channelname, fullmask):
 		'''
@@ -321,8 +321,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onPart(nick, channelname, fullmask)
-			except:
-				pass
+			except Exception as e:
+				print e
 	
 	def joinReceived(self, nick, channelname, fullmask):
 		'''
@@ -337,8 +337,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onJoin(nick, channelname, fullmask)
-			except Exception:
-				pass
+			except Exception as e:
+				print e
 
 	def topicReceived(self, nick, channelname, topic, fullmask):
 		'''
@@ -353,8 +353,8 @@ class ServerConnection(object):
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onTopic(nick, channelname, topic, fullmask)
-			except Exception:
-				pass
+			except Exception as e:
+				print e
 
 	def topicReplyReceived(self, nick, channelname, topic):
 		'''

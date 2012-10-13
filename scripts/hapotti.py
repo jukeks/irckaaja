@@ -70,7 +70,7 @@ class Bigram(object):
 		return sentence
 
 	@classmethod
-	def _generate3(cls, words, start):
+	def _generate3(cls, words, start, words_sentence = None):
 		sentence = [start]
 
 		while sentence[-1] is not End:
@@ -95,7 +95,7 @@ class Bigram(object):
 		return sentence
 
 	@classmethod
-	def generate(cls, filename, start = None):
+	def generate(cls, filename, start = None, version = 4):
 		words_next = defaultdict(Counter)
 		words_sentence = defaultdict(Counter)
 
@@ -115,10 +115,15 @@ class Bigram(object):
 			start = Start
 
 		sentence = []
-
 		i = 0
+
+		generator_func = cls._generate4
+
+		if version == 3:
+			generator_func = cls._generate3
+
 		while len(sentence) < 2:
-			sentence = cls._generate4(words_next, start, words_sentence)
+			sentence = generator_func(words_next, start, words_sentence)
 			i += 1
 
 			if i > 1000:
@@ -132,15 +137,29 @@ class Hapotti(BotScript):
 		BotScript.__init__(self, server_connection, config)
 
 		self.material = config['material']
+		self.targets = config['channels']
 
 	def onChannelMessage(self, nick, target, message, full_mask):
-		#if random.randint(0, 9) < 1:
+		if target not in self.targets:
+			return
+
+
 		if self.server_connection.nick in message:
-			words = message.split()[1:]
-			print random.choice(words)
+			words = message.replace("?", "").split()[1:]
 
-			self.say(target, nick + ", " + Bigram.generate(self.material, random.choice(words)))
+			self.say(target, nick + ", " + Bigram.generate(self.material, random.choice(words), 3))
 
+
+	def onPrivateMessage(self, nick, message, full_mask):
+		if nick not in self.targets:
+			return
+
+		words = message.replace("?", "").split()
+
+		if self.server_connection.nick in message:
+			words = words[1:]
+
+		self.say(nick, Bigram.generate(self.material, random.choice(words), 3))
 
 if __name__ == '__main__':
-	print Bigram.generate("/home/juke/git/bigrammi/hapo_tekstit.txt")
+	print Bigram.generate("/home/juke/git/bigrammi/hapo_tekstit.txt", version = 3)
