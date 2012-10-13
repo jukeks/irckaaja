@@ -58,6 +58,7 @@ class IrcLinkHistory(BotScript):
 			return
 
 		for url in urls:
+			url = url.strip()
 			history_tuple = db.get(url)
 			if not history_tuple:
 				db[url] = (time.time(), nick, message)

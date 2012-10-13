@@ -2,7 +2,7 @@ from configobj import ConfigObj
 
 CONFIGFILENAME = "config.ini"
 
-class Config:
+class Config(object):
 	'''
 	Wrapper for config.ini
 	'''

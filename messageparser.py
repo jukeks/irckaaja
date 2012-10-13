@@ -1,6 +1,6 @@
 import re
 
-class MessageParser:
+class MessageParser(object):
 	'''
 	Class handles irc messages and notifies server_connection
 	about them.

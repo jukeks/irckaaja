@@ -1,6 +1,6 @@
 import time
 
-class BotScript:
+class BotScript(object):
 	'''
 	"Abstract" script class. Should be inherited by script classes.
 	See HelloWorld in scripts.helloworld.py for example.

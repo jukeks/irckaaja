@@ -1,6 +1,6 @@
 import sys
 
-class DynamicModule:
+class DynamicModule(object):
 	'''
 	This class holds Python scripts. 
 	'''
