@@ -70,3 +70,9 @@ class BotScript(object):
 		Called when bot has connected to the network.
 		'''
 		pass
+
+	def onTopic(self, nick, channelname, topic, full_mask):
+		'''
+		Called when topic has changed on a channel.
+		'''
+		pass

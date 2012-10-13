@@ -19,24 +19,25 @@ def main():
 	options = getOptions()
 	conf = Config(options.configfile)
 	modulesd = conf.modules()
-	bot = conf.bot()
-	serverlist = []
+	bot_info = conf.bot()
+	server_connection_list = []
+
+
+	for network_name, server_conf in conf.servers().iteritems():
+		join_list = conf.channels(network_name)
+		server_connection_list.append(
+			ServerConnection(network_name, server_conf, bot_info,
+							join_list, modulesd))
 	
-	for networkname, serverd in conf.servers().iteritems():
-		joinlist = conf.channels(networkname)
-		serverlist.append(
-			ServerConnection(networkname, serverd, bot, 
-							joinlist, modulesd))
-	
-	for s in serverlist:
+	for s in server_connection_list:
 		s.connect()
-		
+
+	# Interrupts are only handled in the main thread in Python so...
 	while True:
 		try:
 			sleep(1.0)
 		except KeyboardInterrupt:
-			print ""
-			for s in serverlist:
+			for s in server_connection_list:
 				s.kill()
 			break
 

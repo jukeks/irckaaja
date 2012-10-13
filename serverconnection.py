@@ -12,7 +12,6 @@ class ServerConnection(object):
 	'''
 	Class handling irc servers.
 	'''
-	#def __init__(self, hostname, port, nick, altnick, username, realname, owner, channels = None, server_alias = ""):
 	def __init__(self, networkname, serverd, botd, joinlist, modulesd):
 		self.alive = True
 		self.connected = False
@@ -23,7 +22,6 @@ class ServerConnection(object):
 		self.username = botd['username']
 		self.realname = botd['realname']
 		self.owner = botd['owner']
-		print self.owner
 		self.networkname = networkname
 		
 		self.joinlist = joinlist
@@ -37,7 +35,6 @@ class ServerConnection(object):
 
 		self.modulesd = modulesd
 		self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
-		print self.dynamic_modules
 		
 	def connect(self):
 		'''
@@ -51,35 +48,35 @@ class ServerConnection(object):
 				self.USER(self.username, self.realname)
 				
 				if not self.reader_thread:
-					self.reader_thread = Thread(target=self.read)
+					self.reader_thread = Thread(target=self._read)
 					self.reader_thread.start()
 				else:
-					self.read()
+					self._read()
 				break
 			except Exception as e:
-				self.printLine(str(e) + " " + self.hostname)
-				self.printLine("Trying again in 30 seconds.")
+				self._printLine(str(e) + " " + self.hostname)
+				self._printLine("Trying again in 30 seconds.")
 				self.sleep(30)
 	
-	def connectAgain(self):
+	def _connectAgain(self):
 		'''
 		Initialises self.socket and tries reconnecting
 		in 60 seconds.
 		'''
 		self.socket.close()
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.printLine("Trying again in 60 seconds.")
+		self._printLine("Trying again in 60 seconds.")
 		self.sleep(60)
 		self.connect()
 	
-	def write(self, message):
+	def _write(self, message):
 		'''
 		Prints and writes message to server.
 		'''
-		self.printLine(message[:-1])
+		self._printLine(message[:-1])
 		self.socket.send(message)
 
-	def read(self):
+	def _read(self):
 		'''
 		Reads and handles messages.
 		'''
@@ -92,8 +89,8 @@ class ServerConnection(object):
 				continue
 			except socket.error as e:
 				self.connected = False
-				self.printLine(str(e))
-				self.connectAgain()
+				self._printLine(str(e))
+				self._connectAgain()
 				return
 			except KeyboardInterrupt:
 				self.kill()
@@ -104,17 +101,17 @@ class ServerConnection(object):
 			
 			if not tmp:
 				self.connected = False
-				self.printLine("Connection closed.")
-				self.connectAgain()
+				self._printLine("Connection closed.")
+				self._connectAgain()
 				return
 
 			buff += tmp
-			buff = self.checkForMessagesAndReturnRemaining(buff)
+			buff = self._checkForMessagesAndReturnRemaining(buff)
 			
 		self.socket.close()
 			
 			
-	def checkForMessagesAndReturnRemaining(self, buff):
+	def _checkForMessagesAndReturnRemaining(self, buff):
 		'''
 		Checks if buff contains any messages. If so, it parses and
 		handles them and returns the remaining bytes.
@@ -125,7 +122,7 @@ class ServerConnection(object):
 		
 		return buff
 
-	def printLine(self, message):
+	def _printLine(self, message):
 		'''
 		Prints message with timestamp.
 		'''
@@ -135,25 +132,25 @@ class ServerConnection(object):
 		'''
 		Sets user's nick on server.
 		'''
-		self.write("NICK " + nick + "\r\n")
+		self._write("NICK " + nick + "\r\n")
 	
 	def USER(self, username, realname):
 		'''
 		Sets username and realname to server on connect.
 		'''
-		self.write("USER " + username  +" 0 * :" + realname + "\r\n")
+		self._write("USER " + username  +" 0 * :" + realname + "\r\n")
 	
 	def PONG(self, message):
 		'''
 		Reply to PING.
 		'''
-		self.write("PONG :" + message + "\r\n")
+		self._write("PONG :" + message + "\r\n")
 	
 	def JOIN(self, channel):
 		'''
 		Joins a irc channel.
 		'''
-		self.write("JOIN :" +channel + "\r\n")
+		self._write("JOIN :" +channel + "\r\n")
 	
 	def PART(self, channel, reason = ""):
 		'''
@@ -162,21 +159,21 @@ class ServerConnection(object):
 		msg = "PART " + channel
 		if reason:
 			msg += " :" + reason
-		self.write(msg + "\r\n")
+		self._write(msg + "\r\n")
 	
 	def PRIVMSG(self, target, message):
 		'''
 		Sends PRIVMSG to target.
 		'''
-		self.write("PRIVMSG " + target + " :" + message + "\r\n")
+		self._write("PRIVMSG " + target + " :" + message + "\r\n")
 
 	def PING(self, message):
 		'''
 		Sends PING to server.
 		'''
-		self.write("PING " + message + "\r\n")
+		self._write("PING " + message + "\r\n")
 
-	def onConnect(self):
+	def _onConnect(self):
 		'''
 		Called when connected to the network.
 		'''
@@ -200,7 +197,7 @@ class ServerConnection(object):
 		'''
 		Called when the thread is wanted dead.
 		'''
-		self.printLine(self.networkname + " dying.")
+		self._printLine(self.networkname + " dying.")
 		self.alive = False
 		for m in self.dynamic_modules:
 			m.instance.kill() 
@@ -210,7 +207,7 @@ class ServerConnection(object):
 		Called when a private message has been received. Prints it
 		and calls onPrivateMessage() on DynamicModule instances.
 		'''
-		self.printLine("PRIVATE" + " <" + source + "> " + message)
+		self._printLine("PRIVATE" + " <" + source + "> " + message)
 		
 		for dm in self.dynamic_modules:
 			try:
@@ -223,7 +220,7 @@ class ServerConnection(object):
 		Called when a PRIVMSG to a channel has been received. Prints it
 		and calls onChannelMessage() on DynamicModule instances.
 		'''
-		self.printLine(channel + " <" + source + "> " + message)
+		self._printLine(channel + " <" + source + "> " + message)
 		
 		for dm in self.dynamic_modules:
 			try:
@@ -242,10 +239,10 @@ class ServerConnection(object):
 		Called when the end of MOTD message
 		has been received.
 		'''
-		self.printLine(message)
+		self._printLine(message)
 		if not self.connected:
 			self.connected = True
-			self.onConnect()
+			self._onConnect()
 	
 	def findChannelByName(self, channelname):
 		'''
@@ -286,11 +283,12 @@ class ServerConnection(object):
 		channel = self.findChannelByName(channelname)
 		if not channel:
 			# TODO FIX
+			print "REPORT THIS: usersEndReceived, channel not found"
 			return
 
 		channel.usersMessageEnd()
-		self.printLine("USERS OF " + channelname)
-		self.printLine(" ".join(channel.userlist))
+		self._printLine("USERS OF " + channelname)
+		self._printLine(" ".join(channel.userlist))
 		
 	def quitReceived(self, nick, fullmask):
 		'''
@@ -300,7 +298,7 @@ class ServerConnection(object):
 		for channel in self.channelList:
 			channel.removeUser(nick)
 			
-		self.printLine(nick + " has quit.")
+		self._printLine(nick + " has quit.")
 		
 		for dm in self.dynamic_modules:
 			try:
@@ -318,7 +316,7 @@ class ServerConnection(object):
 		
 		channel.removeUser(nick)
 		
-		self.printLine(nick + " has part " + channelname)
+		self._printLine(nick + " has part " + channelname)
 		
 		for dm in self.dynamic_modules:
 			try:
@@ -332,19 +330,46 @@ class ServerConnection(object):
 		onJoin() on DynamicModules
 		'''
 		channel = self.findChannelByName(channelname)
-		if not channel: return
+		if channel:
+			channel.addUser(nick)
 		
-		channel.addUser(nick)
-		
-		self.printLine(nick + " has joined " + channelname)
+		self._printLine(nick + " has joined " + channelname)
 		for dm in self.dynamic_modules:
 			try:
 				dm.instance.onJoin(nick, channelname, fullmask)
-			except:
+			except Exception:
 				pass
+
+	def topicReceived(self, nick, channelname, topic, fullmask):
+		'''
+		Called when topic is changed on a channel. Calls onTopic()
+		on DynamicModules
+		'''
+		channel = self.findChannelByName(channelname)
+		if channel:
+			channel.topic = topic
+
+		self._printLine(nick + " changed the topic of " + channelname + " to: " + topic)
+		for dm in self.dynamic_modules:
+			try:
+				dm.instance.onTopic(nick, channelname, topic, fullmask)
+			except Exception:
+				pass
+
+	def topicReplyReceived(self, nick, channelname, topic):
+		'''
+		Called when server responds to client's /topic or server informs
+		of the topic on joined channel.
+		'''
+		channel = self.findChannelByName(channelname)
+		if channel:
+			channel.topic = topic
+
+		self._printLine("Topic in " + channelname + ": " + topic)
+
 	
 	def unknownMessageReceived(self, message):
-		self.printLine(message)
+		self._printLine(message)
 
 	def sleep(self, seconds):
 		'''
