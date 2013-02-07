@@ -2,10 +2,10 @@ import re
 
 
 class MessageParser(object):
-    '''
+    """
     Class handles irc messages and notifies server_connection
     about them.
-    '''
+    """
 
     def __init__(self, server_connection):
         self._sc = server_connection
@@ -13,13 +13,13 @@ class MessageParser(object):
     def _checkForPrivmsg(self, message):
         ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
         privmsg_pattern = re.compile(r'''   # full host mask (1)
-					 ^:((.*?)				# nick (2)
-					 \!(.*?)				# username (3)
-					 @(.*?))\s				# hostname (4)
-					 PRIVMSG\s				# message type
-					 (([\#|\!].*?)|(.*?))\s	# channel (5)(6) or nick (5)
-					 :(.*.?)				# message (8)
-					 ''', re.X)
+                    ^:((.*?)                # nick (2)
+                    \!(.*?)                # username (3)
+                    @(.*?))\s                # hostname (4)
+                    PRIVMSG\s                # message type
+                    (([\#|\!].*?)|(.*?))\s    # channel (5)(6) or nick (5)
+                    :(.*.?)                # message (8)
+                    ''', re.X)
 
         privmsg = privmsg_pattern.match(message)
         if not privmsg: return False
@@ -47,13 +47,13 @@ class MessageParser(object):
     def _checkForUsers(self, message):
         ":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
         users_pattern = re.compile(r'''
-					 ^:.*?\s			# server
-					 353\s				# users code
-					 .*?\s				# hostname
-					 [=|\@]\s
-					 ([\#|\!].*?)\s		# channel (1)
-					 :(.*)				# users (2)
-					 ''', re.X)
+                     ^:.*?\s            # server
+                     353\s                # users code
+                     .*?\s                # hostname
+                     [=|\@]\s
+                     ([\#|\!].*?)\s        # channel (1)
+                     :(.*)                # users (2)
+                     ''', re.X)
 
         match = users_pattern.match(message)
         if not match: return False
@@ -65,12 +65,12 @@ class MessageParser(object):
 
     def _checkForUsersEnd(self, message):
         users_pattern = re.compile(r'''
-					 ^:.*?\s			# server
-					 366\s				# users end code
-					 .*?\s				# hostname
-					 ([\#|\!].*?)\s		# channel (1)
-					 :(.*)				# message (2)
-					 ''', re.X)
+                     ^:.*?\s            # server
+                     366\s                # users end code
+                     .*?\s                # hostname
+                     ([\#|\!].*?)\s        # channel (1)
+                     :(.*)                # message (2)
+                     ''', re.X)
 
         match = users_pattern.match(message)
         if not match: return False
@@ -90,10 +90,10 @@ class MessageParser(object):
 
     def _checkForEndOfMotd(self, message):
         motd_pattern = re.compile(r'''
-									^:		  # start and :
-									.*?\s	  # server hostname
-									376\s	  # MODE for end of motd message
-									''', re.X)
+                                    ^:          # start and :
+                                    .*?\s      # server hostname
+                                    376\s      # MODE for end of motd message
+                                    ''', re.X)
 
         if not motd_pattern.match(message):
             return False
@@ -103,13 +103,13 @@ class MessageParser(object):
 
     def _checkForQuit(self, message):
         ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net QUIT :Signed off"
-        quit_pattern = re.compile(r''' 			# fullmask (1)
-								 ^:((.*?)		# nick (2)
-								 \!(.*?)		# username (3)
-								 @(.*?))\s		# hostname (4)
-								 QUIT\s			# message type
-								 :(.*.?)		# message (5)
-								 ''', re.X)
+        quit_pattern = re.compile(r'''             # fullmask (1)
+                                 ^:((.*?)        # nick (2)
+                                 \!(.*?)        # username (3)
+                                 @(.*?))\s        # hostname (4)
+                                 QUIT\s            # message type
+                                 :(.*.?)        # message (5)
+                                 ''', re.X)
 
         match = quit_pattern.match(message)
         if not match: return False
@@ -121,13 +121,13 @@ class MessageParser(object):
 
     def _checkForPart(self, message):
         ":godlRmue!~Olog@lekvam.no PART #day9tv"
-        part_pattern = re.compile(r''' 			# fullmask (1)
-								 ^:((.*?)		# nick (2)
-								 \!(.*?)		# username (3)
-								 @(.*?))\s		# hostname (4)
-								 PART\s			# message type
-								 ([\#|\!].*.?)	# channel (5)
-								 ''', re.X)
+        part_pattern = re.compile(r'''             # fullmask (1)
+                                 ^:((.*?)        # nick (2)
+                                 \!(.*?)        # username (3)
+                                 @(.*?))\s        # hostname (4)
+                                 PART\s            # message type
+                                 ([\#|\!].*.?)    # channel (5)
+                                 ''', re.X)
 
         match = part_pattern.match(message)
         if not match: return False
@@ -142,13 +142,13 @@ class MessageParser(object):
     def _checkForJoin(self, message):
         #message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
         ":imsopure!webchat@p50803C58.dip.t-dialin.net JOIN :#joindota"
-        join_pattern = re.compile(r''' 					# fullmask (1)
-								 ^:((.*?)				# nick (2)
-								 \!(.*?)			 	# username (3)
-								 @(.*?))\s			 	# hostname (4)
-								 JOIN\s:?			    # message type
-								 ([\#|\!].*.?)		 	# channel (5)
-								 ''', re.X)
+        join_pattern = re.compile(r'''                     # fullmask (1)
+                                 ^:((.*?)                # nick (2)
+                                 \!(.*?)                 # username (3)
+                                 @(.*?))\s                 # hostname (4)
+                                 JOIN\s:?                # message type
+                                 ([\#|\!].*.?)             # channel (5)
+                                 ''', re.X)
 
         match = join_pattern.match(message)
         if not match: return False
@@ -163,12 +163,12 @@ class MessageParser(object):
     def _checkForTopicReply(self, message):
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
         topic_reply_pattern = re.compile(r'''
-										 ^:.*?\s			# server
-										 332\s				# topic reply code
-										 (.*?)\s			# nick (1)
-										 ([\#|\!].*?)\s		# channel (2)
-										 :(.*)				# topic (3)
-										 ''', re.X)
+                                         ^:.*?\s            # server
+                                         332\s                # topic reply code
+                                         (.*?)\s            # nick (1)
+                                         ([\#|\!].*?)\s        # channel (2)
+                                         :(.*)                # topic (3)
+                                         ''', re.X)
 
         match = topic_reply_pattern.match(message)
         if not match: return False
@@ -182,14 +182,14 @@ class MessageParser(object):
 
     def _checkForTopic(self, message):
         ":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"
-        topic_pattern = re.compile(r''' 				# fullmask (1)
-								 ^:((.*?)				# nick (2)
-								 \!(.*?)			 	# username (3)
-								 @(.*?))\s			 	# hostname (4)
-								 TOPIC\s:?			    # message type
-								 ([\#|\!].*.?)\s		# channel (5)
-								 :(.*.?)				# topic (6)
-								 ''', re.X)
+        topic_pattern = re.compile(r'''                 # fullmask (1)
+                                 ^:((.*?)                # nick (2)
+                                 \!(.*?)                 # username (3)
+                                 @(.*?))\s                 # hostname (4)
+                                 TOPIC\s:?                # message type
+                                 ([\#|\!].*.?)\s        # channel (5)
+                                 :(.*.?)                # topic (6)
+                                 ''', re.X)
         match = topic_pattern.match(message)
         if not match: return False
 
@@ -202,9 +202,9 @@ class MessageParser(object):
         return True
 
     def parse(self, message):
-        '''
+        """
         Tries to figure out what the message is.
-        '''
+        """
         if self._checkForEndOfMotd(message): return
 
         if self._checkForPing(message): return
