@@ -4,11 +4,12 @@ import sys
 import random
 
 try:
-	from botscript import BotScript
+    from botscript import BotScript
 except ImportError:
-	import sys
-	sys.path.append("../")
-	from botscript import BotScript
+    import sys
+
+    sys.path.append("../")
+    from botscript import BotScript
 
 STOP_WORDS = """
 se
@@ -25,141 +26,141 @@ jees
 
 
 class Start:
-	def __str__(self):
-		return "[^]"
+    def __str__(self):
+        return "[^]"
 
 
 class End:
-	def __str__(self):
-		return "[$]"
+    def __str__(self):
+        return "[$]"
 
 
 class Bigram(object):
-	@classmethod
-	def _generate4(cls, words, start, words_sentence):
-		sentence = [start]
+    @classmethod
+    def _generate4(cls, words, start, words_sentence):
+        sentence = [start]
 
-		while sentence[-1] is not End:
-			most_common = words[sentence[-1]].most_common()
+        while sentence[-1] is not End:
+            most_common = words[sentence[-1]].most_common()
 
-			if len(most_common) < 2:
-				break
+            if len(most_common) < 2:
+                break
 
-			c = Counter()
-			for word, weight in most_common:
-				if word is End and len(sentence) < 20:
-					continue
-				else:
-					for comp_word, comp_weight in words_sentence[word].most_common():
-						if comp_word not in STOP_WORDS and comp_word in sentence:
-							c[word] += comp_weight
-					break
+            c = Counter()
+            for word, weight in most_common:
+                if word is End and len(sentence) < 20:
+                    continue
+                else:
+                    for comp_word, comp_weight in words_sentence[word].most_common():
+                        if comp_word not in STOP_WORDS and comp_word in sentence:
+                            c[word] += comp_weight
+                    break
 
-			try:
-				sentence.append(c.most_common()[0][0])
-			except IndexError:
-				random.shuffle(most_common)
-				word, weight = most_common.pop()
-				sentence.append(word)
+            try:
+                sentence.append(c.most_common()[0][0])
+            except IndexError:
+                random.shuffle(most_common)
+                word, weight = most_common.pop()
+                sentence.append(word)
 
-		if sentence[-1] is End:
-			sentence = sentence[:-1]
-		if sentence[0] is Start:
-			sentence = sentence[1:]
+        if sentence[-1] is End:
+            sentence = sentence[:-1]
+        if sentence[0] is Start:
+            sentence = sentence[1:]
 
-		return sentence
+        return sentence
 
-	@classmethod
-	def _generate3(cls, words, start, words_sentence = None):
-		sentence = [start]
+    @classmethod
+    def _generate3(cls, words, start, words_sentence=None):
+        sentence = [start]
 
-		while sentence[-1] is not End:
-			most_common = words[sentence[-1]].most_common()
-			random.shuffle(most_common)
+        while sentence[-1] is not End:
+            most_common = words[sentence[-1]].most_common()
+            random.shuffle(most_common)
 
-			if len(most_common) < 2:
-				break
+            if len(most_common) < 2:
+                break
 
-			for word, _ in most_common:
-				if word is End and len(sentence) < 20:
-					continue
-				else:
-					sentence.append(word)
-					break
+            for word, _ in most_common:
+                if word is End and len(sentence) < 20:
+                    continue
+                else:
+                    sentence.append(word)
+                    break
 
-		if sentence[-1] is End:
-			sentence = sentence[:-1]
-		if sentence[0] is Start:
-			sentence = sentence[1:]
+        if sentence[-1] is End:
+            sentence = sentence[:-1]
+        if sentence[0] is Start:
+            sentence = sentence[1:]
 
-		return sentence
+        return sentence
 
-	@classmethod
-	def generate(cls, filename, start = None, version = 4):
-		words_next = defaultdict(Counter)
-		words_sentence = defaultdict(Counter)
+    @classmethod
+    def generate(cls, filename, start=None, version=4):
+        words_next = defaultdict(Counter)
+        words_sentence = defaultdict(Counter)
 
-		for line in open(filename):
-			line = line.split()
+        for line in open(filename):
+            line = line.split()
 
-			if len(line) < 2:
-				continue
+            if len(line) < 2:
+                continue
 
-			for first, second in zip([Start] + line, line + [End]):
-				words_next[first][second] += 1
+            for first, second in zip([Start] + line, line + [End]):
+                words_next[first][second] += 1
 
-				for word in line:
-					words_sentence[first][word] += 1
+                for word in line:
+                    words_sentence[first][word] += 1
 
-		if not start:
-			start = Start
+        if not start:
+            start = Start
 
-		sentence = []
-		i = 0
+        sentence = []
+        i = 0
 
-		generator_func = cls._generate4
+        generator_func = cls._generate4
 
-		if version == 3:
-			generator_func = cls._generate3
+        if version == 3:
+            generator_func = cls._generate3
 
-		while len(sentence) < 2:
-			sentence = generator_func(words_next, start, words_sentence)
-			i += 1
+        while len(sentence) < 2:
+            sentence = generator_func(words_next, start, words_sentence)
+            i += 1
 
-			if i > 1000:
-				start = Start
+            if i > 1000:
+                start = Start
 
-		return " ".join(sentence)
+        return " ".join(sentence)
 
 
 class Hapotti(BotScript):
-	def __init__(self, server_connection, config):
-		BotScript.__init__(self, server_connection, config)
+    def __init__(self, server_connection, config):
+        BotScript.__init__(self, server_connection, config)
 
-		self.material = config['material']
-		self.targets = config['channels']
+        self.material = config['material']
+        self.targets = config['channels']
 
-	def onChannelMessage(self, nick, target, message, full_mask):
-		if target not in self.targets:
-			return
+    def onChannelMessage(self, nick, target, message, full_mask):
+        if target not in self.targets:
+            return
+
+        if self.server_connection.nick in message:
+            words = message.replace("?", "").split()[1:]
+
+            self.say(target, nick + ", " + Bigram.generate(self.material, random.choice(words), 3))
 
 
-		if self.server_connection.nick in message:
-			words = message.replace("?", "").split()[1:]
+    def onPrivateMessage(self, nick, message, full_mask):
+        if nick not in self.targets:
+            return
 
-			self.say(target, nick + ", " + Bigram.generate(self.material, random.choice(words), 3))
+        words = message.replace("?", "").split()
 
+        if self.server_connection.nick in message:
+            words = words[1:]
 
-	def onPrivateMessage(self, nick, message, full_mask):
-		if nick not in self.targets:
-			return
+        self.say(nick, Bigram.generate(self.material, random.choice(words), 3))
 
-		words = message.replace("?", "").split()
-
-		if self.server_connection.nick in message:
-			words = words[1:]
-
-		self.say(nick, Bigram.generate(self.material, random.choice(words), 3))
 
 if __name__ == '__main__':
-	print Bigram.generate("/home/juke/git/bigrammi/hapo_tekstit.txt", version = 3)
+    print Bigram.generate("/home/juke/git/bigrammi/hapo_tekstit.txt", version=3)
