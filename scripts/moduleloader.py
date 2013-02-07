@@ -39,7 +39,7 @@ class ModuleLoader(BotScript):
                 return True
 
         # Loading and appending to the list
-        dm = DynamicModule(self.server_connection, module_name, self.server_connection.modulesd[module_name])
+        dm = DynamicModule(self.server_connection, module_name, self.server_connection.modules_config[module_name])
         self.server_connection.dynamic_modules.append(dm)
 
         self.say(source, "loaded " + str(dm.classvar))

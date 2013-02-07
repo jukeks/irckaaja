@@ -13,16 +13,16 @@ class ServerConnection(object):
     Class handling irc servers.
     """
 
-    def __init__(self, networkname, serverd, botd, joinlist, modulesd):
+    def __init__(self, networkname, server_config, bot_config, joinlist, modules_config):
         self.alive = True
         self.connected = False
-        self.hostname = serverd['hostname']
-        self.port = int(serverd.get('port', "6667"))
-        self.nick = botd['nick']
-        self.altnick = botd.get('altnick', self.nick + "_")
-        self.username = botd['username']
-        self.realname = botd['realname']
-        self.owner = botd['owner']
+        self.hostname = server_config['hostname']
+        self.port = int(server_config.get('port', "6667"))
+        self.nick = bot_config['nick']
+        self.altnick = bot_config.get('altnick', self.nick + "_")
+        self.username = bot_config['username']
+        self.realname = bot_config['realname']
+        self.owner = bot_config['owner']
         self.networkname = networkname
 
         self.joinlist = joinlist
@@ -34,7 +34,8 @@ class ServerConnection(object):
 
         self.channelList = []
 
-        self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modulesd.items()]
+        self.modules_config = modules_config
+        self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
     def connect(self):
         """
