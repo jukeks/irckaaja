@@ -13,8 +13,9 @@ GALLERYIMAGEAPI = '/3/gallery/image/'
 class ImgurAnnouncer(BotScript):
     def onChannelMessage(self, nick, target, message, full_mask):
         titles = ImgurAnnouncer._get_titles(message)
-        for title in titles:
-            self.say(target, "** " + title + " **")
+        if titles:
+            for title in titles:
+                self.say(target, "** " + title + " **")
 
     @staticmethod
     def _get_titles(message):

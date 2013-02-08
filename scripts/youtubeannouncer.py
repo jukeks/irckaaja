@@ -13,10 +13,11 @@ class YoutubeAnnouncer(BotScript):
     def onChannelMessage(self, nick, target, message, full_mask):
         ids = self._parse_ids(message)
 
-        for id in ids:
-            title = self._query_title(id)
-            if title:
-                self.say(target, "** " + title + " **")
+        if ids:
+            for id in ids:
+                title = self._query_title(id)
+                if title:
+                    self.say(target, "** " + title + " **")
 
     @staticmethod
     def _parse_ids(message):
