@@ -1,5 +1,5 @@
 import time
-
+import re
 
 class BotScript(object):
     """
@@ -78,3 +78,7 @@ class BotScript(object):
         Called when topic has changed on a channel.
         """
         pass
+
+    @staticmethod
+    def parse_urls(string):
+        return re.findall(r'(https?://\S+)', string)
