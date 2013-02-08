@@ -1,6 +1,7 @@
 import re
 import httplib
 from botscript import BotScript
+import json
 
 CLIENT_ID = '75c435ce216d1f2'
 
@@ -11,37 +12,59 @@ GALLERYIMAGEAPI = '/3/gallery/image/'
 
 class ImgurAnnouncer(BotScript):
     def onChannelMessage(self, nick, target, message, full_mask):
-        ids = self._parse_ids(message)
-
-        for id in ids:
-            title = self._query_title(id)
-            if title:
-                self.say(target, "** " + title + " **")
+        titles = ImgurAnnouncer._get_titles(message)
+        for title in titles:
+            self.say(target, "** " + title + " **")
 
     @staticmethod
-    def _parse_ids(message):
+    def _get_titles(message):
+        gallery_img = "http://imgur.com/gallery/"
+        album = "http://imgur.com/a/"
+        img = "http://imgur.com/"
+
         urls = BotScript.parse_urls(message)
         if not urls:
             return
-        ids = []
+        titles = []
         for url in urls:
-            match = re.match(re.compile(r'''https?://
-                        (youtu\.be/|www\.youtube\.com/watch\?v=)
-                        (\S*?)($|\?\S*$)
-                         ''', re.X),
-                             url)
+            id = url.split("/")[-1]
+            title = None
+            if url.startswith(gallery_img):
+                title = ImgurAnnouncer._query_gallery_image_caption(id)
+            elif url.startswith(album):
+                title = ImgurAnnouncer._query_album_caption(id)
+            elif url.startswith(img):
+                title = ImgurAnnouncer._query_image_caption(id)
 
-            if match:
-                ids.append(match.group(2))
-        return ids
+            if title:
+                titles.append(title)
+        return titles
 
     @staticmethod
-    def _query_api(id):
-        print "lol"
+    def _query_api(api, id):
+        try:
+            h = httplib.HTTPSConnection(APIHOST)
+            headers = {"Authorization": "Client-ID " + CLIENT_ID}
+            h.request("GET", api + id, headers=headers)
+            resp = h.getresponse()
+
+            resp = resp.read()
+            resp = json.loads(resp)
+            return resp['data']['title']
+        except:
+            return None
 
     @staticmethod
     def _query_gallery_image_caption(id):
-        ImgurAnnouncer._query_api(id)
+        return ImgurAnnouncer._query_api(GALLERYIMAGEAPI, id)
+
+    @staticmethod
+    def _query_image_caption(id):
+        return ImgurAnnouncer._query_api(IMAGEAPI, id)
+
+    @staticmethod
+    def _query_album_caption(id):
+        return ImgurAnnouncer._query_api(ALBUMAPI, id)
 
 if __name__ == '__main__':
-    ImgurAnnouncer._query_gallery_image_caption('qZmYt0C')
+    print ImgurAnnouncer._get_titles('http://imgur.com/gallery/nctxEnV http://imgur.com/gallery/uV3b1 http://imgur.com/a/uV3b1' )
