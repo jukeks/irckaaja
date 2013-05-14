@@ -1,14 +1,31 @@
 import re
 
+class MessageType(object):
+    PRIVATE_MESSAGE = 0
+    JOIN = 1
+    PART = 2
+    PING = 3
+    QUIT = 4
+    TOPIC = 5
+    END_OF_MOTD = 6
+    NICK_IN_USE = 7
+    TOPIC = 8
+    TOPIC_REPLY = 9
+    USERS = 10
+    END_OF_USERS = 11
+    CHANNEL_MESSAGE = 12
+    UNKNOWN = 13
+
+class ParsedMessage(object):
+    def __init__(self, type_, **kw):
+        self.type = type_
+        self.params = kw
 
 class MessageParser(object):
     """
     Class handles irc messages and notifies server_connection
     about them.
     """
-
-    def __init__(self, server_connection):
-        self._sc = server_connection
 
     def _checkForPrivmsg(self, message):
         ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
@@ -22,24 +39,27 @@ class MessageParser(object):
                     ''', re.X)
 
         privmsg = privmsg_pattern.match(message)
-        if not privmsg: return False
+        if not privmsg:
+            return False
 
         try:
-            source = privmsg.group(2)
-            fullmask = privmsg.group(1)
-            msg = privmsg.group(8)
+            params = {}
+            type_ = None
+            params['source'] = privmsg.group(2)
+            params['full_mask'] = privmsg.group(1)
+            params['message'] = privmsg.group(8)
 
             # channel
             if privmsg.group(5) == privmsg.group(6):
-                target = privmsg.group(5)
-                self._sc.channelMessageReceived(source, target, msg, fullmask)
+                params['channel'] = privmsg.group(5)
+                type_ = MessageType.CHANNEL_MESSAGE
             # private
             else:
-                self._sc.privateMessageReceived(source, msg, fullmask)
+                type_ = MessageType.PRIVATE_MESSAGE
         except AttributeError:
             pass
 
-        return True
+        return ParsedMessage(type_, **params)
 
     def _checkForNickInUse(self, message):
         ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
@@ -48,20 +68,20 @@ class MessageParser(object):
         ":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
         users_pattern = re.compile(r'''
                      ^:.*?\s            # server
-                     353\s                # users code
-                     .*?\s                # hostname
+                     353\s              # users code
+                     .*?\s              # hostname
                      [=|\@]\s
-                     ([\#|\!].*?)\s        # channel (1)
-                     :(.*)                # users (2)
+                     ([\#|\!].*?)\s     # channel (1)
+                     :(.*)              # users (2)
                      ''', re.X)
 
         match = users_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
         channel = match.group(1)
         userlist = match.group(2).split(" ")
-        self._sc.usersReceived(channel, userlist)
-        return True
+        return ParsedMessage(MessageType.USERS, channel_name=channel, user_list=userlist)
 
     def _checkForUsersEnd(self, message):
         users_pattern = re.compile(r'''
@@ -73,20 +93,19 @@ class MessageParser(object):
                      ''', re.X)
 
         match = users_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
         channel = match.group(1)
 
-        self._sc.usersEndReceived(channel)
-        return True
+        return ParsedMessage(MessageType.END_OF_USERS, channel_name=channel)
 
     def _checkForPing(self, message):
         if not message.startswith("PING"):
-            return False
+            return
 
         _, _, message = message.partition(" :")
-        self._sc.pingReceived(message)
-        return True
+        return ParsedMessage(MessageType.PING, message=message)
 
     def _checkForEndOfMotd(self, message):
         motd_pattern = re.compile(r'''
@@ -96,10 +115,9 @@ class MessageParser(object):
                                     ''', re.X)
 
         if not motd_pattern.match(message):
-            return False
+            return
 
-        self._sc.motdReceived(message)
-        return True
+        return ParsedMessage(MessageType.END_OF_MOTD, message=message)
 
     def _checkForQuit(self, message):
         ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net QUIT :Signed off"
@@ -112,12 +130,12 @@ class MessageParser(object):
                                  ''', re.X)
 
         match = quit_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
-        name = match.group(2)
-        fullmask = match.group(1)
-        self._sc.quitReceived(name, fullmask)
-        return True
+        nick = match.group(2)
+        full_mask = match.group(1)
+        return ParsedMessage(MessageType.QUIT, nick=nick, full_mask=full_mask)
 
     def _checkForPart(self, message):
         ":godlRmue!~Olog@lekvam.no PART #day9tv"
@@ -130,14 +148,14 @@ class MessageParser(object):
                                  ''', re.X)
 
         match = part_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
-        fullmask = match.group(1)
-        name = match.group(2)
-        channel = match.group(5)
+        full_mask = match.group(1)
+        nick = match.group(2)
+        channel_name = match.group(5)
 
-        self._sc.partReceived(name, channel, fullmask)
-        return True
+        return ParsedMessage(MessageType.PART, nick=nick, channel_name=channel_name, full_mask=full_mask)
 
     def _checkForJoin(self, message):
         #message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
@@ -151,14 +169,14 @@ class MessageParser(object):
                                  ''', re.X)
 
         match = join_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
-        fullmask = match.group(1)
-        name = match.group(2)
-        channel = match.group(5)
+        full_mask = match.group(1)
+        nick = match.group(2)
+        channel_name = match.group(5)
 
-        self._sc.joinReceived(name, channel, fullmask)
-        return True
+        return ParsedMessage(MessageType.JOIN, nick=nick, full_mask=full_mask, channel_name=channel_name)
 
     def _checkForTopicReply(self, message):
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
@@ -171,14 +189,14 @@ class MessageParser(object):
                                          ''', re.X)
 
         match = topic_reply_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
         nick = match.group(1)
-        channelname = match.group(2)
+        channel_name = match.group(2)
         topic = match.group(3)
 
-        self._sc.topicReplyReceived(nick, channelname, topic)
-        return True
+        return ParsedMessage(MessageType.TOPIC_REPLY, nick=nick, channel_name=channel_name, topic=topic)
 
     def _checkForTopic(self, message):
         ":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"
@@ -191,22 +209,35 @@ class MessageParser(object):
                                  :(.*.?)                # topic (6)
                                  ''', re.X)
         match = topic_pattern.match(message)
-        if not match: return False
+        if not match:
+            return
 
-        fullmask = match.group(1)
+        full_mask = match.group(1)
         nick = match.group(2)
-        channelname = match.group(5)
+        channel_name = match.group(5)
         topic = match.group(6)
 
-        self._sc.topicReceived(nick, channelname, topic, fullmask)
-        return True
+        return ParsedMessage(MessageType.TOPIC, nick=nick, full_mask=full_mask, channel_name=channel_name, topic=topic)
 
     def parse(self, message):
         """
         Tries to figure out what the message is.
         """
+        checkers = [self._checkForEndOfMotd, self._checkForJoin, self._checkForPing,
+                    self._checkForPrivmsg, self._checkForUsers, self._checkForUsersEnd,
+                    self._checkForJoin, self._checkForPart, self._checkForQuit,
+                    self._checkForTopic, self._checkForTopicReply]
+
+        for checker in checkers:
+            parsed_message = checker(message)
+            if parsed_message:
+                return parsed_message
+
+        return ParsedMessage(MessageType.UNKNOWN, message=message)
+        """
         if self._checkForEndOfMotd(message): return
 
+        ret = self._checkForPing(message)
         if self._checkForPing(message): return
 
         if self._checkForPrivmsg(message): return
@@ -224,6 +255,6 @@ class MessageParser(object):
         #if self.checkForError(message) : return
 
         self._sc.unknownMessageReceived(message)
-
+        """
 #p = MessageParser(None)
 #p.checkForJoin(None)

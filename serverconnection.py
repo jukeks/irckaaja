@@ -1,7 +1,7 @@
 import socket
 import time
 from threading import Thread
-from messageparser import MessageParser
+from messageparser import MessageParser, ParsedMessage, MessageType
 from channel import IrcChannel
 from dynamicmodule import DynamicModule
 
@@ -28,14 +28,32 @@ class ServerConnection(object):
         self.joinlist = joinlist
 
         self.reader_thread = None
-        self.parser = MessageParser(self)
-
+        self.parser = MessageParser()
+        self._init_callback_table()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.channelList = []
+        self.channel_list = []
 
         self.modules_config = modules_config
         self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+
+    def _init_callback_table(self):
+        self.receive_callbacks = {
+            MessageType.PRIVATE_MESSAGE: self.privateMessageReceived,
+            MessageType.JOIN: self.joinReceived,
+            MessageType.PART: self.partReceived,
+            MessageType.PING: self.pingReceived,
+            MessageType.QUIT: self.quitReceived,
+            MessageType.TOPIC: self.topicReceived,
+            MessageType.END_OF_MOTD: self.motdReceived,
+            #MessageType.NICK_IN_USE: self.ni,
+            MessageType.TOPIC: self.topicReceived,
+            MessageType.TOPIC_REPLY: self.topicReplyReceived,
+            MessageType.USERS: self.usersReceived,
+            MessageType.END_OF_USERS: self.usersEndReceived,
+            MessageType.CHANNEL_MESSAGE: self.channelMessageReceived,
+            MessageType.UNKNOWN: self.unknownMessageReceived,
+        }
 
     def connect(self):
         """
@@ -119,7 +137,8 @@ class ServerConnection(object):
         """
         while buff.find("\r\n") != -1:
             head, _, buff = buff.partition("\r\n")
-            self.parser.parse(head)
+            parsed = self.parser.parse(head)
+            self.receive_callbacks[parsed.type](**parsed.params)
 
         return buff
 
@@ -203,174 +222,219 @@ class ServerConnection(object):
         for m in self.dynamic_modules:
             m.instance.kill()
 
-    def privateMessageReceived(self, source, message, fullmask):
+    def privateMessageReceived(self, **kw):
         """
         Called when a private message has been received. Prints it
         and calls onPrivateMessage() on DynamicModule instances.
         """
+        source = kw['source']
+        message = kw['message']
+        full_mask = kw['full_mask']
         self._printLine("PRIVATE" + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onPrivateMessage(source, message, fullmask)
+                dm.instance.onPrivateMessage(source, message, full_mask)
             except Exception as e:
                 print e
 
-    def channelMessageReceived(self, source, channel, message, fullmask):
+    def channelMessageReceived(self, **kw):
         """
         Called when a PRIVMSG to a channel has been received. Prints it
         and calls onChannelMessage() on DynamicModule instances.
         """
+
+        source = kw['source']
+        message = kw['message']
+        full_mask = kw['full_mask']
+        channel = kw['channel']
+
         self._printLine(channel + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onChannelMessage(source, channel, message, fullmask)
+                dm.instance.onChannelMessage(source, channel, message, full_mask)
             except Exception as e:
                 print e
 
-    def pingReceived(self, message):
+    def pingReceived(self, **kw):
         """
         Called when PING message has been received.
         """
+
+        message = kw['message']
         self.PONG(message)
 
-    def motdReceived(self, message):
+    def motdReceived(self, **kw):
         """
         Called when the end of MOTD message
         has been received.
         """
+        message = kw['message']
+
         self._printLine(message)
         if not self.connected:
             self.connected = True
             self._onConnect()
 
-    def findChannelByName(self, channelname):
+    def findChannelByName(self, channel_name):
         """
-        Returns a channel instance from channellist
-        matching channelname parameter or None.
+        Returns a channel instance from channel_list
+        matching channel_name parameter or None.
         """
-        for channel in self.channelList:
-            if channel.name == channelname:
+        for channel in self.channel_list:
+            if channel.name == channel_name:
                 return channel
 
-    def addChannel(self, name, userlist):
+    def addChannel(self, name, user_list):
         """
         Adds a channel to networks channel list.
         """
         if self.findChannelByName(name):
             return
 
-        channel = IrcChannel(name, userlist)
-        self.channelList.append(channel)
+        channel = IrcChannel(name, user_list)
+        self.channel_list.append(channel)
 
-    def usersReceived(self, channelname, userlist):
+    def usersReceived(self, **kw):
         """
         Called when USERS message is received. Notifies
         channel instance of the users.
         """
-        channel = self.findChannelByName(channelname)
+
+        channel_name = kw['channel_name']
+        user_list = kw['user_list']
+
+        channel = self.findChannelByName(channel_name)
         if not channel:
-            self.addChannel(channelname, userlist)
+            self.addChannel(channel_name, user_list)
             return
 
-        channel.usersMessage(userlist)
+        channel.usersMessage(user_list)
 
-    def usersEndReceived(self, channelname):
+    def usersEndReceived(self, **kw):
         """
         Called when USERS message's end has been received.
         Notifies the channel instance.
         """
-        channel = self.findChannelByName(channelname)
+
+        channel_name = kw['channel_name']
+
+        channel = self.findChannelByName(channel_name)
         if not channel:
             # TODO FIX
             print "REPORT THIS: usersEndReceived, channel not found"
             return
 
         channel.usersMessageEnd()
-        self._printLine("USERS OF " + channelname)
+        self._printLine("USERS OF " + channel_name)
         self._printLine(" ".join(channel.userlist))
 
-    def quitReceived(self, nick, fullmask):
+    def quitReceived(self, **kw):
         """
         Called when a QUIT message has been received. Calls
         onQuit() on DynamicModules
         """
-        for channel in self.channelList:
+
+        nick = kw['nick']
+        full_mask = kw['full_mask']
+
+        for channel in self.channel_list:
             channel.removeUser(nick)
 
         self._printLine(nick + " has quit.")
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onQuit(nick, fullmask)
+                dm.instance.onQuit(nick, full_mask)
             except Exception as e:
                 print e
 
-    def partReceived(self, nick, channelname, fullmask):
+    def partReceived(self, **kw):
         """
         Called when a PART message has been received. Calls
         onPart() on DynamicModules
         """
-        channel = self.findChannelByName(channelname)
-        if not channel: return
+
+        nick = kw['nick']
+        channel_name = kw['channel_name']
+        full_mask = kw['full_mask']
+
+        channel = self.findChannelByName(channel_name)
+        if not channel:
+            return
 
         channel.removeUser(nick)
 
-        self._printLine(nick + " has part " + channelname)
+        self._printLine(nick + " has part " + channel_name)
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onPart(nick, channelname, fullmask)
+                dm.instance.onPart(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
-    def joinReceived(self, nick, channelname, fullmask):
+    def joinReceived(self, **kw):
         """
         Called when a JOIN message has been received. Calls
         onJoin() on DynamicModules
         """
-        channel = self.findChannelByName(channelname)
+
+        nick = kw['nick']
+        channel_name = kw['channel_name']
+        full_mask = kw['full_mask']
+
+        channel = self.findChannelByName(channel_name)
         if channel:
             channel.addUser(nick)
 
-        self._printLine(nick + " has joined " + channelname)
+        self._printLine(nick + " has joined " + channel_name)
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onJoin(nick, channelname, fullmask)
+                dm.instance.onJoin(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
-    def topicReceived(self, nick, channelname, topic, fullmask):
+    def topicReceived(self, **kw):
         """
         Called when topic is changed on a channel. Calls onTopic()
         on DynamicModules
         """
-        channel = self.findChannelByName(channelname)
+
+        nick = kw['nick']
+        channel_name = kw['channel_name']
+        full_mask = kw['full_mask']
+        topic = kw['topic']
+
+        channel = self.findChannelByName(channel_name)
         if channel:
             channel.topic = topic
 
-        self._printLine(nick + " changed the topic of " + channelname + " to: " + topic)
+        self._printLine(nick + " changed the topic of " + channel_name + " to: " + topic)
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onTopic(nick, channelname, topic, fullmask)
+                dm.instance.onTopic(nick, channel_name, topic, full_mask)
             except Exception as e:
                 print e
 
-    def topicReplyReceived(self, nick, channelname, topic):
+    def topicReplyReceived(self, **kw):
         """
         Called when server responds to client's /topic or server informs
         of the topic on joined channel.
         """
-        channel = self.findChannelByName(channelname)
+
+        channel_name = kw['channel_name']
+        topic = kw['topic']
+
+        channel = self.findChannelByName(channel_name)
         if channel:
             channel.topic = topic
 
-        self._printLine("Topic in " + channelname + ": " + topic)
+        self._printLine("Topic in " + channel_name + ": " + topic)
 
 
-    def unknownMessageReceived(self, message):
-        self._printLine(message)
+    def unknownMessageReceived(self, **kw):
+        self._printLine(kw['message'])
 
     def sleep(self, seconds):
         """
