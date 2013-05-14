@@ -237,27 +237,6 @@ class MessageParser(object):
                 return parsed_message
 
         return ParsedMessage(MessageType.UNKNOWN, message=message)
-        """
-        if self._checkForEndOfMotd(message): return
 
-        ret = self._checkForPing(message)
-        if self._checkForPing(message): return
-
-        if self._checkForPrivmsg(message): return
-
-        if self._checkForUsers(message): return
-        if self._checkForUsersEnd(message): return
-
-        if self._checkForJoin(message): return
-        if self._checkForPart(message): return
-        if self._checkForQuit(message): return
-
-        if self._checkForTopic(message): return
-        if self._checkForTopicReply(message): return
-
-        #if self.checkForError(message) : return
-
-        self._sc.unknownMessageReceived(message)
-        """
 #p = MessageParser(None)
 #p.checkForJoin(None)
