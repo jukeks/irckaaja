@@ -47,7 +47,6 @@ class ServerConnection(object):
             MessageType.TOPIC: self.topicReceived,
             MessageType.END_OF_MOTD: self.motdReceived,
             #MessageType.NICK_IN_USE: self.ni,
-            MessageType.TOPIC: self.topicReceived,
             MessageType.TOPIC_REPLY: self.topicReplyReceived,
             MessageType.USERS: self.usersReceived,
             MessageType.END_OF_USERS: self.usersEndReceived,

@@ -1,6 +1,7 @@
 import time
 import re
 
+
 class BotScript(object):
     """
     "Abstract" script class. Should be inherited by script classes.
@@ -11,7 +12,6 @@ class BotScript(object):
         self.server_connection = server_connection
         self.config = config
         self.alive = True
-
 
         # usage: self.say(target, message)
         self.say = server_connection.PRIVMSG

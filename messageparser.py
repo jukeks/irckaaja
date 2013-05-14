@@ -1,5 +1,6 @@
 import re
 
+
 class MessageType(object):
     PRIVATE_MESSAGE = 0
     JOIN = 1
@@ -16,10 +17,12 @@ class MessageType(object):
     CHANNEL_MESSAGE = 12
     UNKNOWN = 13
 
+
 class ParsedMessage(object):
     def __init__(self, type_, **kw):
         self.type = type_
         self.params = kw
+
 
 class MessageParser(object):
     """
@@ -42,9 +45,9 @@ class MessageParser(object):
         if not privmsg:
             return False
 
+        params = {}
+        type_ = None
         try:
-            params = {}
-            type_ = None
             params['source'] = privmsg.group(2)
             params['full_mask'] = privmsg.group(1)
             params['message'] = privmsg.group(8)
@@ -57,7 +60,7 @@ class MessageParser(object):
             else:
                 type_ = MessageType.PRIVATE_MESSAGE
         except AttributeError:
-            pass
+            return
 
         return ParsedMessage(type_, **params)
 

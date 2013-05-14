@@ -3,12 +3,12 @@ from dynamicmodule import DynamicModule
 
 
 class ModuleLoader(BotScript):
-    '''
+    """
     A helper script for loading, reloading and unloading
     modules dynamically on runtime. Makes developing scripts
     much easier as the bot need to reconnect to irc network
     between changes.
-    '''
+    """
 
     def onPrivateMessage(self, source, message, full_mask):
         # authenticating
@@ -17,11 +17,13 @@ class ModuleLoader(BotScript):
 
         # checking if we got a relevant message
         try:
-            if self.tryLoad(source, message): return
+            if self.tryLoad(source, message):
+                return
+            if self.tryReload(source, message):
+                return
+            if self.tryUnload(source, message):
+                return
 
-            if self.tryReload(source, message): return
-
-            if self.tryUnload(source, message): return
         except Exception as e:
             self.say(source, "error: " + str(e))
 
@@ -87,4 +89,4 @@ class ModuleLoader(BotScript):
         # module was not found
         self.say(source, "unable to find module with name " + module_name)
         return True
-	
+
