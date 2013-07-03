@@ -12,6 +12,7 @@ class ServerConnection(object):
     """
     Class handling irc servers.
     """
+    PING_INTERVAL_THRESHOLD = 300  # 300 seconds
 
     def __init__(self, networkname, server_config, bot_config, joinlist, modules_config):
         self.alive = True
@@ -30,12 +31,14 @@ class ServerConnection(object):
         self.reader_thread = None
         self.parser = MessageParser()
         self._init_callback_table()
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket = None
 
         self.channel_list = []
 
         self.modules_config = modules_config
         self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+
+        self._lastPing = time.time()
 
     def _init_callback_table(self):
         self.receive_callbacks = {
@@ -58,34 +61,37 @@ class ServerConnection(object):
         """
         Tries to connect to irc server.
         """
+        self.reader_thread = Thread(target=self._connectionLoop)
+        self.reader_thread.start()
+
+    def _connect(self):
         while self.alive:
             try:
+                if self.socket:
+                    self.socket.close()
+
+                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.socket.connect((self.hostname, self.port))
 
                 self.NICK(self.nick)
                 self.USER(self.username, self.realname)
 
-                if not self.reader_thread:
-                    self.reader_thread = Thread(target=self._read)
-                    self.reader_thread.start()
-                else:
-                    self._read()
+                self._lastPing = time.time()
+
                 break
+
             except Exception as e:
                 self._printLine(str(e) + " " + self.hostname)
                 self._printLine("Trying again in 30 seconds.")
                 self.sleep(30)
 
-    def _connectAgain(self):
-        """
-        Initialises self.socket and tries reconnecting
-        in 60 seconds.
-        """
-        self.socket.close()
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._printLine("Trying again in 60 seconds.")
-        self.sleep(60)
-        self.connect()
+    def _connectionLoop(self):
+        while self.alive:
+            self._connect()
+            self._read()
+
+            self._printLine("Trying again in 60 seconds.")
+            self.sleep(60)
 
     def _write(self, message):
         """
@@ -94,22 +100,24 @@ class ServerConnection(object):
         self._printLine(message[:-1])
         self.socket.send(message)
 
+    def _check_ping_time(self):
+        return time.time() - self._lastPing < ServerConnection.PING_INTERVAL_THRESHOLD
+
     def _read(self):
         """
         Reads and handles messages.
         """
         self.socket.settimeout(1.0)
         buff = ""
-        while self.alive:
+        while self.alive and self._check_ping_time():
             try:
-                tmp = self.socket.recv(1024)
+                tmp = self.socket.recv(4096)
             except socket.timeout as e:
                 continue
             except socket.error as e:
-                self.connected = False
                 self._printLine(str(e))
-                self._connectAgain()
-                return
+                break
+
             except KeyboardInterrupt:
                 self.kill()
                 return
@@ -118,15 +126,14 @@ class ServerConnection(object):
                 break
 
             if not tmp:
-                self.connected = False
-                self._printLine("Connection closed.")
-                self._connectAgain()
-                return
+                break
 
             buff += tmp
             buff = self._checkForMessagesAndReturnRemaining(buff)
 
         self.socket.close()
+        self._printLine("Connection closed.")
+        self.connected = False
 
 
     def _checkForMessagesAndReturnRemaining(self, buff):
@@ -261,6 +268,7 @@ class ServerConnection(object):
         Called when PING message has been received.
         """
 
+        self._lastPing = time.time()
         message = kw['message']
         self.PONG(message)
 
