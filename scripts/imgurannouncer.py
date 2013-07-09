@@ -51,6 +51,8 @@ class ImgurAnnouncer(BotScript):
 
             resp = resp.read()
             resp = json.loads(resp)
+            h.close()
+            
             return resp['data']['title']
         except:
             return None
