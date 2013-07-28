@@ -1,5 +1,8 @@
 IrkkaaNorttienKanssa
 ====================
+
+![Spheres](https://dl.dropboxusercontent.com/u/31013819/spheres.jpg)
+
 Usage:
 #
 python irckaaja.py --help
