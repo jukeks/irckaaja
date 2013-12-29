@@ -140,7 +140,7 @@ class Hapotti(BotScript):
         self.material = config['material']
         self.targets = config['channels']
 
-    def onChannelMessage(self, nick, target, message, full_mask):
+    def on_channel_message(self, nick, target, message, full_mask):
         if target not in self.targets:
             return
 
@@ -150,7 +150,7 @@ class Hapotti(BotScript):
             self.say(target, nick + ", " + Bigram.generate(self.material, random.choice(words), 3))
 
 
-    def onPrivateMessage(self, nick, message, full_mask):
+    def on_private_message(self, nick, message, full_mask):
         if nick not in self.targets:
             return
 

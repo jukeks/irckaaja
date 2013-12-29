@@ -10,7 +10,7 @@ class ModuleLoader(BotScript):
     between changes.
     """
 
-    def onPrivateMessage(self, source, message, full_mask):
+    def on_private_message(self, source, message, full_mask):
         # authenticating
         if full_mask != self.server_connection.owner:
             return

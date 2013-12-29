@@ -208,7 +208,7 @@ class ServerConnection(object):
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onConnect()
+                dm.instance.on_connect()
             except Exception as e:
                 print e
 
@@ -240,7 +240,7 @@ class ServerConnection(object):
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onPrivateMessage(source, message, full_mask)
+                dm.instance.on_private_message(source, message, full_mask)
             except Exception as e:
                 print e
 
@@ -259,7 +259,7 @@ class ServerConnection(object):
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onChannelMessage(source, channel, message, full_mask)
+                dm.instance.on_channel_message(source, channel, message, full_mask)
             except Exception as e:
                 print e
 
@@ -353,7 +353,7 @@ class ServerConnection(object):
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onQuit(nick, full_mask)
+                dm.instance.on_quit(nick, full_mask)
             except Exception as e:
                 print e
 
@@ -377,7 +377,7 @@ class ServerConnection(object):
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onPart(nick, channel_name, full_mask)
+                dm.instance.on_part(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
@@ -398,7 +398,7 @@ class ServerConnection(object):
         self._printLine(nick + " has joined " + channel_name)
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onJoin(nick, channel_name, full_mask)
+                dm.instance.on_join(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
@@ -420,7 +420,7 @@ class ServerConnection(object):
         self._printLine(nick + " changed the topic of " + channel_name + " to: " + topic)
         for dm in self.dynamic_modules:
             try:
-                dm.instance.onTopic(nick, channel_name, topic, full_mask)
+                dm.instance.on_topic(nick, channel_name, topic, full_mask)
             except Exception as e:
                 print e
 

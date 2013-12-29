@@ -11,7 +11,7 @@ ALBUMAPI = '/3/album/'
 GALLERYIMAGEAPI = '/3/gallery/image/'
 
 class ImgurAnnouncer(BotScript):
-    def onChannelMessage(self, nick, target, message, full_mask):
+    def on_channel_message(self, nick, target, message, full_mask):
         titles = ImgurAnnouncer._get_titles(message)
         if titles:
             for title in titles:

@@ -17,10 +17,10 @@ class BotScript(object):
         self.say = server_connection.PRIVMSG
 
         # usage: self.joinChannel(channel_name)
-        self.joinChannel = server_connection.JOIN
+        self.join_channel = server_connection.JOIN
 
         #usage: self.partChannel(channel_name, reason = "")
-        self.partChannel = server_connection.PART
+        self.part_channel = server_connection.PART
 
 
     def sleep(self, seconds):
@@ -37,43 +37,43 @@ class BotScript(object):
 
     # Methods below can be implemented in your script class if you like.
     # That way you can subscribe to those messages.
-    def onChannelMessage(self, nick, target, message, full_mask):
+    def on_channel_message(self, nick, target, message, full_mask):
         """
         Called when a channel message is received.
         """
         pass
 
-    def onPrivateMessage(self, nick, message, full_mask):
+    def on_private_message(self, nick, message, full_mask):
         """
         Called when a private message is received.
         """
         pass
 
-    def onJoin(self, nick, channel_name, full_mask):
+    def on_join(self, nick, channel_name, full_mask):
         """
         Called when a user joins a channel.
         """
         pass
 
-    def onPart(self, nick, channel_name, full_mask):
+    def on_part(self, nick, channel_name, full_mask):
         """
         Called when a user parts a channel.
         """
         pass
 
-    def onQuit(self, nick, full_mask):
+    def on_quit(self, nick, full_mask):
         """
         Called when a user quits the network.
         """
         pass
 
-    def onConnect(self):
+    def on_connect(self):
         """
         Called when bot has connected to the network.
         """
         pass
 
-    def onTopic(self, nick, channelname, topic, full_mask):
+    def on_topic(self, nick, channelname, topic, full_mask):
         """
         Called when topic has changed on a channel.
         """

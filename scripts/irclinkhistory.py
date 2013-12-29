@@ -49,7 +49,7 @@ class IrcLinkHistory(BotScript):
             seconds = (minutes - int(minutes)) * 60
             return "%d vuotta, %d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (years, days, hours, minutes, seconds)
 
-    def onChannelMessage(self, nick, channel_name, message, full_mask):
+    def on_channel_message(self, nick, channel_name, message, full_mask):
         urls = self.parse_urls(message)
 
         if not urls:

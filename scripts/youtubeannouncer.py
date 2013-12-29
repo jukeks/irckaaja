@@ -10,7 +10,7 @@ APIURL = "http://gdata.youtube.com/feeds/api/videos/"
 
 
 class YoutubeAnnouncer(BotScript):
-    def onChannelMessage(self, nick, target, message, full_mask):
+    def on_channel_message(self, nick, target, message, full_mask):
         ids = self._parse_ids(message)
 
         if ids:
