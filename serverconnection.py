@@ -117,7 +117,6 @@ class ServerConnection(object):
             except socket.error as e:
                 self._print_line(str(e))
                 break
-
             except KeyboardInterrupt:
                 self.kill()
                 return
@@ -129,24 +128,20 @@ class ServerConnection(object):
                 break
 
             buff += tmp
-            buff = self._check_for_messages_and_return_remaining(buff)
+            parsed_messages, remainder = self._parser.parse_buffer(buff)
+            buff = remainder
+            self._handle_messages(parsed_messages)
 
         self._socket.close()
         self._print_line("Connection closed.")
         self.connected = False
 
-
-    def _check_for_messages_and_return_remaining(self, buff):
+    def _handle_messages(self, messages):
         """
-        Checks if buff contains any messages. If so, it parses and
-        handles them and returns the remaining bytes.
+        Handles a list of messages
         """
-        while buff.find("\r\n") != -1:
-            head, _, buff = buff.partition("\r\n")
-            parsed = self._parser.parse(head)
-            self._receive_callbacks[parsed.type](**parsed.params)
-
-        return buff
+        for message in messages:
+            self._receive_callbacks[message.type](**message.params)
 
     def _print_line(self, message):
         """

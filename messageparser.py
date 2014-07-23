@@ -222,7 +222,7 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.TOPIC, nick=nick, full_mask=full_mask, channel_name=channel_name, topic=topic)
 
-    def parse(self, message):
+    def _parse_message(self, message):
         """
         Tries to figure out what the message is.
         """
@@ -237,6 +237,19 @@ class MessageParser(object):
                 return parsed_message
 
         return ParsedMessage(MessageType.UNKNOWN, message=message)
+
+    def parse_buffer(self, buff):
+        """
+        Parses buffer to ParsedMessages.
+        Returns list of ParsedMessages and remainder of buff.
+        """
+        parsed_messages = []
+        while "\r\n" in buff:
+            message, _, buff = buff.partition("\r\n")
+            parsed = self._parse_message(message)
+            parsed_messages.append(parsed)
+
+        return parsed_messages, buff
 
 #p = MessageParser(None)
 #p.checkForJoin(None)
