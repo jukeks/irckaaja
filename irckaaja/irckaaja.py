@@ -8,9 +8,6 @@ def getOptions():
     parser = OptionParser()
     parser.add_option("-c", "--configfile", dest="configfile",
                       help="Reads FILE as a configfile", metavar="FILE", default="config.ini")
-    parser.add_option("-d", "--daemon",
-                      action="store_true", dest="daemon", default=False,
-                      help="Runs as a daemon")
 
     options, _ = parser.parse_args()
     return options
