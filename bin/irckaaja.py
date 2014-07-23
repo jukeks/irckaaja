@@ -1,8 +1,7 @@
-from config import Config
-from serverconnection import ServerConnection
+from irckaaja.config import Config
+from irckaaja.serverconnection import ServerConnection
 from optparse import OptionParser
 from time import sleep
-from dynamicmodule import DynamicModule
 
 
 def getOptions():
