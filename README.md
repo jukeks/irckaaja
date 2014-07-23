@@ -1,17 +1,10 @@
-IrkkaaNorttienKanssa
+Irckaaja
 ====================
 
 Usage:
-#
-python irckaaja.py --help
+-------------
+`python setup.py install`
+`irckaaja`
 
-Change config.ini to suit your needs
 
-Dependencies:
-
-configobj.py http://www.voidspace.org.uk/python/configobj.html
-Can be installed with easy_install configobj
-
-SVN Announcer depends on pysvn.
-
-For example scripts see botscript.py and scripts/helloworld.py
+For example scripts see botscript.py and scripts/helloworld.py.
