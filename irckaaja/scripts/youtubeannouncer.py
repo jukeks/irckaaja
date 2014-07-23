@@ -4,7 +4,7 @@ import re
 import urllib2
 from xml.dom import minidom
 
-from botscript import BotScript
+from irckaaja.botscript import BotScript
 
 APIURL = "http://gdata.youtube.com/feeds/api/videos/"
 

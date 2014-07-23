@@ -1,6 +1,6 @@
 import re
 import httplib
-from botscript import BotScript
+from irckaaja.botscript import BotScript
 import json
 
 CLIENT_ID = '75c435ce216d1f2'

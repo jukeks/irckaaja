@@ -1,4 +1,4 @@
-from botscript import BotScript
+from irckaaja.botscript import BotScript
 
 
 class HelloWorld(BotScript):

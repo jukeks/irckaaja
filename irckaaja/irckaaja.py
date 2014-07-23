@@ -1,5 +1,5 @@
-from irckaaja.config import Config
-from irckaaja.serverconnection import ServerConnection
+from config import Config
+from serverconnection import ServerConnection
 from optparse import OptionParser
 from time import sleep
 

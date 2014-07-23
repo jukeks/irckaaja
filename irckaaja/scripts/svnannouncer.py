@@ -1,7 +1,7 @@
 import pysvn
 import threading
 
-from botscript import BotScript
+from irckaaja.botscript import BotScript
 
 
 class SVNAnnouncer(BotScript, threading.Thread):

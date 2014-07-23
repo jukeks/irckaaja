@@ -1,5 +1,5 @@
-from botscript import BotScript
-from dynamicmodule import DynamicModule
+from irckaaja.botscript import BotScript
+from irckaaja.dynamicmodule import DynamicModule
 
 
 class ModuleLoader(BotScript):

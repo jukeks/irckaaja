@@ -2,7 +2,7 @@ __author__ = 'juke'
 # -*- coding: utf-8 -*-
 
 
-from botscript import BotScript
+from irckaaja.botscript import BotScript
 import shove
 import re
 import time
