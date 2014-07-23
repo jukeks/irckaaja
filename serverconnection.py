@@ -253,7 +253,7 @@ class ServerConnection(object):
         source = kw['source']
         message = kw['message']
         full_mask = kw['full_mask']
-        channel = kw['channel']
+        channel = kw['channel_name']
 
         self._print_line(channel + " <" + source + "> " + message)
 
@@ -330,7 +330,7 @@ class ServerConnection(object):
         channel = self._find_channel_by_name(channel_name)
         if not channel:
             # TODO FIX
-            print "REPORT THIS: usersEndReceived, channel not found"
+            self._print_line("REPORT THIS: usersEndReceived, channel not found")
             return
 
         channel.users_message_end()

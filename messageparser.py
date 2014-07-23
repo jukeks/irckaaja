@@ -54,7 +54,7 @@ class MessageParser(object):
 
             # channel
             if privmsg.group(5) == privmsg.group(6):
-                params['channel'] = privmsg.group(5)
+                params['channel_name'] = privmsg.group(5)
                 type_ = MessageType.CHANNEL_MESSAGE
             # private
             else:
