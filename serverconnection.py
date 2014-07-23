@@ -28,94 +28,94 @@ class ServerConnection(object):
 
         self.joinlist = joinlist
 
-        self.reader_thread = None
-        self.parser = MessageParser()
+        self._reader_thread = None
+        self._parser = MessageParser()
         self._init_callback_table()
-        self.socket = None
+        self._socket = None
 
-        self.channel_list = []
+        self._channel_list = []
 
-        self.modules_config = modules_config
-        self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self._modules_config = modules_config
+        self._dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
-        self._lastPing = time.time()
+        self._last_ping = time.time()
 
     def _init_callback_table(self):
-        self.receive_callbacks = {
-            MessageType.PRIVATE_MESSAGE: self.privateMessageReceived,
-            MessageType.JOIN: self.joinReceived,
-            MessageType.PART: self.partReceived,
-            MessageType.PING: self.pingReceived,
-            MessageType.QUIT: self.quitReceived,
-            MessageType.TOPIC: self.topicReceived,
-            MessageType.END_OF_MOTD: self.motdReceived,
+        self._receive_callbacks = {
+            MessageType.PRIVATE_MESSAGE: self._private_message_received,
+            MessageType.JOIN: self._join_received,
+            MessageType.PART: self._part_received,
+            MessageType.PING: self._ping_received,
+            MessageType.QUIT: self._quit_received,
+            MessageType.TOPIC: self._topic_received,
+            MessageType.END_OF_MOTD: self._motd_received,
             #MessageType.NICK_IN_USE: self.ni,
-            MessageType.TOPIC_REPLY: self.topicReplyReceived,
-            MessageType.USERS: self.usersReceived,
-            MessageType.END_OF_USERS: self.usersEndReceived,
-            MessageType.CHANNEL_MESSAGE: self.channelMessageReceived,
-            MessageType.UNKNOWN: self.unknownMessageReceived,
+            MessageType.TOPIC_REPLY: self._topic_reply_received,
+            MessageType.USERS: self._users_received,
+            MessageType.END_OF_USERS: self._users_end_received,
+            MessageType.CHANNEL_MESSAGE: self._channel_message_received,
+            MessageType.UNKNOWN: self._unknown_message_received,
         }
 
     def connect(self):
         """
         Tries to connect to irc server.
         """
-        self.reader_thread = Thread(target=self._connectionLoop)
-        self.reader_thread.start()
+        self._reader_thread = Thread(target=self._connection_loop)
+        self._reader_thread.start()
 
     def _connect(self):
         while self.alive:
             try:
-                if self.socket:
-                    self.socket.close()
+                if self._socket:
+                    self._socket.close()
 
-                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((self.hostname, self.port))
+                self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self._socket.connect((self.hostname, self.port))
 
                 self.NICK(self.nick)
                 self.USER(self.username, self.realname)
 
-                self._lastPing = time.time()
+                self._last_ping = time.time()
 
                 break
 
             except Exception as e:
-                self._printLine(str(e) + " " + self.hostname)
-                self._printLine("Trying again in 30 seconds.")
-                self.sleep(30)
+                self._print_line(str(e) + " " + self.hostname)
+                self._print_line("Trying again in 30 seconds.")
+                self._sleep(30)
 
-    def _connectionLoop(self):
+    def _connection_loop(self):
         while self.alive:
             self._connect()
             self._read()
 
-            self._printLine("Trying again in 60 seconds.")
-            self.sleep(60)
+            self._print_line("Trying again in 60 seconds.")
+            self._sleep(60)
 
     def _write(self, message):
         """
         Prints and writes message to server.
         """
-        self._printLine(message[:-1])
-        self.socket.send(message)
+        self._print_line(message[:-1])
+        self._socket.send(message)
 
     def _check_ping_time(self):
-        return time.time() - self._lastPing < ServerConnection.PING_INTERVAL_THRESHOLD
+        return time.time() - self._last_ping < ServerConnection.PING_INTERVAL_THRESHOLD
 
     def _read(self):
         """
         Reads and handles messages.
         """
-        self.socket.settimeout(1.0)
+        self._socket.settimeout(1.0)
         buff = ""
         while self.alive and self._check_ping_time():
             try:
-                tmp = self.socket.recv(4096)
+                tmp = self._socket.recv(4096)
             except socket.timeout as e:
                 continue
             except socket.error as e:
-                self._printLine(str(e))
+                self._print_line(str(e))
                 break
 
             except KeyboardInterrupt:
@@ -129,26 +129,26 @@ class ServerConnection(object):
                 break
 
             buff += tmp
-            buff = self._checkForMessagesAndReturnRemaining(buff)
+            buff = self._check_for_messages_and_return_remaining(buff)
 
-        self.socket.close()
-        self._printLine("Connection closed.")
+        self._socket.close()
+        self._print_line("Connection closed.")
         self.connected = False
 
 
-    def _checkForMessagesAndReturnRemaining(self, buff):
+    def _check_for_messages_and_return_remaining(self, buff):
         """
         Checks if buff contains any messages. If so, it parses and
         handles them and returns the remaining bytes.
         """
         while buff.find("\r\n") != -1:
             head, _, buff = buff.partition("\r\n")
-            parsed = self.parser.parse(head)
-            self.receive_callbacks[parsed.type](**parsed.params)
+            parsed = self._parser.parse(head)
+            self._receive_callbacks[parsed.type](**parsed.params)
 
         return buff
 
-    def _printLine(self, message):
+    def _print_line(self, message):
         """
         Prints message with timestamp.
         """
@@ -199,20 +199,20 @@ class ServerConnection(object):
         """
         self._write("PING " + message + "\r\n")
 
-    def _onConnect(self):
+    def _on_connect(self):
         """
         Called when connected to the network.
         """
         self.PING(self.hostname)
-        self.joinChannels()
+        self._join_channels()
 
-        for dm in self.dynamic_modules:
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_connect()
             except Exception as e:
                 print e
 
-    def joinChannels(self):
+    def _join_channels(self):
         """
         Joins channels specified in self.joinlist
         """
@@ -223,31 +223,31 @@ class ServerConnection(object):
         """
         Called when the thread is wanted dead.
         """
-        self._printLine(self.networkname + " dying.")
+        self._print_line(self.networkname + " dying.")
         self.alive = False
-        for m in self.dynamic_modules:
+        for m in self._dynamic_modules:
             m.instance.kill()
 
-    def privateMessageReceived(self, **kw):
+    def _private_message_received(self, **kw):
         """
         Called when a private message has been received. Prints it
-        and calls onPrivateMessage() on DynamicModule instances.
+        and calls on_private_message() on DynamicModule instances.
         """
         source = kw['source']
         message = kw['message']
         full_mask = kw['full_mask']
-        self._printLine("PRIVATE" + " <" + source + "> " + message)
+        self._print_line("PRIVATE" + " <" + source + "> " + message)
 
-        for dm in self.dynamic_modules:
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_private_message(source, message, full_mask)
             except Exception as e:
                 print e
 
-    def channelMessageReceived(self, **kw):
+    def _channel_message_received(self, **kw):
         """
         Called when a PRIVMSG to a channel has been received. Prints it
-        and calls onChannelMessage() on DynamicModule instances.
+        and calls on_channel_message() on DynamicModule instances.
         """
 
         source = kw['source']
@@ -255,55 +255,55 @@ class ServerConnection(object):
         full_mask = kw['full_mask']
         channel = kw['channel']
 
-        self._printLine(channel + " <" + source + "> " + message)
+        self._print_line(channel + " <" + source + "> " + message)
 
-        for dm in self.dynamic_modules:
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_channel_message(source, channel, message, full_mask)
             except Exception as e:
                 print e
 
-    def pingReceived(self, **kw):
+    def _ping_received(self, **kw):
         """
         Called when PING message has been received.
         """
 
-        self._lastPing = time.time()
+        self._last_ping = time.time()
         message = kw['message']
         self.PONG(message)
 
-    def motdReceived(self, **kw):
+    def _motd_received(self, **kw):
         """
         Called when the end of MOTD message
         has been received.
         """
         message = kw['message']
 
-        self._printLine(message)
+        self._print_line(message)
         if not self.connected:
             self.connected = True
-            self._onConnect()
+            self._on_connect()
 
-    def findChannelByName(self, channel_name):
+    def _find_channel_by_name(self, channel_name):
         """
         Returns a channel instance from channel_list
         matching channel_name parameter or None.
         """
-        for channel in self.channel_list:
+        for channel in self._channel_list:
             if channel.name == channel_name:
                 return channel
 
-    def addChannel(self, name, user_list):
+    def _add_channel(self, name, user_list):
         """
         Adds a channel to networks channel list.
         """
-        if self.findChannelByName(name):
+        if self._find_channel_by_name(name):
             return
 
         channel = IrcChannel(name, user_list)
-        self.channel_list.append(channel)
+        self._channel_list.append(channel)
 
-    def usersReceived(self, **kw):
+    def _users_received(self, **kw):
         """
         Called when USERS message is received. Notifies
         channel instance of the users.
@@ -312,14 +312,14 @@ class ServerConnection(object):
         channel_name = kw['channel_name']
         user_list = kw['user_list']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if not channel:
-            self.addChannel(channel_name, user_list)
+            self._add_channel(channel_name, user_list)
             return
 
         channel.usersMessage(user_list)
 
-    def usersEndReceived(self, **kw):
+    def _users_end_received(self, **kw):
         """
         Called when USERS message's end has been received.
         Notifies the channel instance.
@@ -327,17 +327,17 @@ class ServerConnection(object):
 
         channel_name = kw['channel_name']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if not channel:
             # TODO FIX
             print "REPORT THIS: usersEndReceived, channel not found"
             return
 
         channel.usersMessageEnd()
-        self._printLine("USERS OF " + channel_name)
-        self._printLine(" ".join(channel.userlist))
+        self._print_line("USERS OF " + channel_name)
+        self._print_line(" ".join(channel.userlist))
 
-    def quitReceived(self, **kw):
+    def _quit_received(self, **kw):
         """
         Called when a QUIT message has been received. Calls
         onQuit() on DynamicModules
@@ -346,18 +346,18 @@ class ServerConnection(object):
         nick = kw['nick']
         full_mask = kw['full_mask']
 
-        for channel in self.channel_list:
+        for channel in self._channel_list:
             channel.removeUser(nick)
 
-        self._printLine(nick + " has quit.")
+        self._print_line(nick + " has quit.")
 
-        for dm in self.dynamic_modules:
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_quit(nick, full_mask)
             except Exception as e:
                 print e
 
-    def partReceived(self, **kw):
+    def _part_received(self, **kw):
         """
         Called when a PART message has been received. Calls
         onPart() on DynamicModules
@@ -367,21 +367,21 @@ class ServerConnection(object):
         channel_name = kw['channel_name']
         full_mask = kw['full_mask']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if not channel:
             return
 
         channel.removeUser(nick)
 
-        self._printLine(nick + " has part " + channel_name)
+        self._print_line(nick + " has part " + channel_name)
 
-        for dm in self.dynamic_modules:
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_part(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
-    def joinReceived(self, **kw):
+    def _join_received(self, **kw):
         """
         Called when a JOIN message has been received. Calls
         onJoin() on DynamicModules
@@ -391,18 +391,18 @@ class ServerConnection(object):
         channel_name = kw['channel_name']
         full_mask = kw['full_mask']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if channel:
             channel.addUser(nick)
 
-        self._printLine(nick + " has joined " + channel_name)
-        for dm in self.dynamic_modules:
+        self._print_line(nick + " has joined " + channel_name)
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_join(nick, channel_name, full_mask)
             except Exception as e:
                 print e
 
-    def topicReceived(self, **kw):
+    def _topic_received(self, **kw):
         """
         Called when topic is changed on a channel. Calls onTopic()
         on DynamicModules
@@ -413,18 +413,18 @@ class ServerConnection(object):
         full_mask = kw['full_mask']
         topic = kw['topic']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if channel:
             channel.topic = topic
 
-        self._printLine(nick + " changed the topic of " + channel_name + " to: " + topic)
-        for dm in self.dynamic_modules:
+        self._print_line(nick + " changed the topic of " + channel_name + " to: " + topic)
+        for dm in self._dynamic_modules:
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)
             except Exception as e:
                 print e
 
-    def topicReplyReceived(self, **kw):
+    def _topic_reply_received(self, **kw):
         """
         Called when server responds to client's /topic or server informs
         of the topic on joined channel.
@@ -433,17 +433,16 @@ class ServerConnection(object):
         channel_name = kw['channel_name']
         topic = kw['topic']
 
-        channel = self.findChannelByName(channel_name)
+        channel = self._find_channel_by_name(channel_name)
         if channel:
             channel.topic = topic
 
-        self._printLine("Topic in " + channel_name + ": " + topic)
+        self._print_line("Topic in " + channel_name + ": " + topic)
 
+    def _unknown_message_received(self, **kw):
+        self._print_line(kw['message'])
 
-    def unknownMessageReceived(self, **kw):
-        self._printLine(kw['message'])
-
-    def sleep(self, seconds):
+    def _sleep(self, seconds):
         """
         Sleeps for seconds unless not self.alive.
         """
