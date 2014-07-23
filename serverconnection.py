@@ -36,7 +36,7 @@ class ServerConnection(object):
         self._channel_list = []
 
         self._modules_config = modules_config
-        self._dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
         self._last_ping = time.time()
 
@@ -201,7 +201,7 @@ class ServerConnection(object):
         self.PING(self.hostname)
         self._join_channels()
 
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_connect()
             except Exception as e:
@@ -220,7 +220,7 @@ class ServerConnection(object):
         """
         self._print_line(self.networkname + " dying.")
         self.alive = False
-        for m in self._dynamic_modules:
+        for m in self.dynamic_modules:
             m.instance.kill()
 
     def _private_message_received(self, **kw):
@@ -233,7 +233,7 @@ class ServerConnection(object):
         full_mask = kw['full_mask']
         self._print_line("PRIVATE" + " <" + source + "> " + message)
 
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_private_message(source, message, full_mask)
             except Exception as e:
@@ -252,7 +252,7 @@ class ServerConnection(object):
 
         self._print_line(channel + " <" + source + "> " + message)
 
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_channel_message(source, channel, message, full_mask)
             except Exception as e:
@@ -346,7 +346,7 @@ class ServerConnection(object):
 
         self._print_line(nick + " has quit.")
 
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_quit(nick, full_mask)
             except Exception as e:
@@ -368,9 +368,9 @@ class ServerConnection(object):
 
         channel.remove_user(nick)
 
-        self._print_line(nick + " has part " + channel_name)
+        self._print_line(nick + " has parted " + channel_name)
 
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_part(nick, channel_name, full_mask)
             except Exception as e:
@@ -391,7 +391,7 @@ class ServerConnection(object):
             channel.add_user(nick)
 
         self._print_line(nick + " has joined " + channel_name)
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_join(nick, channel_name, full_mask)
             except Exception as e:
@@ -413,7 +413,7 @@ class ServerConnection(object):
             channel.topic = topic
 
         self._print_line(nick + " changed the topic of " + channel_name + " to: " + topic)
-        for dm in self._dynamic_modules:
+        for dm in self.dynamic_modules:
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)
             except Exception as e:
