@@ -23,7 +23,7 @@ class DynamicModule(object):
         self.module_config = config
         self.load()
 
-    def reloadModule(self):
+    def reload_module(self):
         """
         Reloads the module, the class and overwrites the instance.
         """

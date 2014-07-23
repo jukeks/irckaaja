@@ -30,7 +30,7 @@ class MessageParser(object):
     about them.
     """
 
-    def _checkForPrivmsg(self, message):
+    def _check_for_privmsg(self, message):
         ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
         privmsg_pattern = re.compile(r'''   # full host mask (1)
                     ^:((.*?)                # nick (2)
@@ -67,7 +67,7 @@ class MessageParser(object):
     def _checkForNickInUse(self, message):
         ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
 
-    def _checkForUsers(self, message):
+    def _check_for_users(self, message):
         ":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
         users_pattern = re.compile(r'''
                      ^:.*?\s            # server
@@ -86,7 +86,7 @@ class MessageParser(object):
         userlist = match.group(2).split(" ")
         return ParsedMessage(MessageType.USERS, channel_name=channel, user_list=userlist)
 
-    def _checkForUsersEnd(self, message):
+    def _check_for_users_end(self, message):
         users_pattern = re.compile(r'''
                      ^:.*?\s            # server
                      366\s                # users end code
@@ -103,14 +103,14 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.END_OF_USERS, channel_name=channel)
 
-    def _checkForPing(self, message):
+    def _check_for_ping(self, message):
         if not message.startswith("PING"):
             return
 
         _, _, message = message.partition(" :")
         return ParsedMessage(MessageType.PING, message=message)
 
-    def _checkForEndOfMotd(self, message):
+    def _check_for_end_of_motd(self, message):
         motd_pattern = re.compile(r'''
                                     ^:          # start and :
                                     .*?\s      # server hostname
@@ -122,7 +122,7 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.END_OF_MOTD, message=message)
 
-    def _checkForQuit(self, message):
+    def _check_for_quit(self, message):
         ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net QUIT :Signed off"
         quit_pattern = re.compile(r'''             # fullmask (1)
                                  ^:((.*?)        # nick (2)
@@ -140,7 +140,7 @@ class MessageParser(object):
         full_mask = match.group(1)
         return ParsedMessage(MessageType.QUIT, nick=nick, full_mask=full_mask)
 
-    def _checkForPart(self, message):
+    def _check_for_part(self, message):
         ":godlRmue!~Olog@lekvam.no PART #day9tv"
         part_pattern = re.compile(r'''             # fullmask (1)
                                  ^:((.*?)        # nick (2)
@@ -160,7 +160,7 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.PART, nick=nick, channel_name=channel_name, full_mask=full_mask)
 
-    def _checkForJoin(self, message):
+    def _check_for_join(self, message):
         #message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
         ":imsopure!webchat@p50803C58.dip.t-dialin.net JOIN :#joindota"
         join_pattern = re.compile(r'''                     # fullmask (1)
@@ -181,7 +181,7 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.JOIN, nick=nick, full_mask=full_mask, channel_name=channel_name)
 
-    def _checkForTopicReply(self, message):
+    def _check_for_topic_reply(self, message):
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
         topic_reply_pattern = re.compile(r'''
                                          ^:.*?\s            # server
@@ -201,7 +201,7 @@ class MessageParser(object):
 
         return ParsedMessage(MessageType.TOPIC_REPLY, nick=nick, channel_name=channel_name, topic=topic)
 
-    def _checkForTopic(self, message):
+    def _check_for_topic(self, message):
         ":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"
         topic_pattern = re.compile(r'''                 # fullmask (1)
                                  ^:((.*?)                # nick (2)
@@ -226,10 +226,10 @@ class MessageParser(object):
         """
         Tries to figure out what the message is.
         """
-        checkers = [self._checkForEndOfMotd, self._checkForJoin, self._checkForPing,
-                    self._checkForPrivmsg, self._checkForUsers, self._checkForUsersEnd,
-                    self._checkForJoin, self._checkForPart, self._checkForQuit,
-                    self._checkForTopic, self._checkForTopicReply]
+        checkers = [self._check_for_end_of_motd, self._check_for_join, self._check_for_ping,
+                    self._check_for_privmsg, self._check_for_users, self._check_for_users_end,
+                    self._check_for_part, self._check_for_quit, self._check_for_topic,
+                    self._check_for_topic_reply]
 
         for checker in checkers:
             parsed_message = checker(message)

@@ -317,7 +317,7 @@ class ServerConnection(object):
             self._add_channel(channel_name, user_list)
             return
 
-        channel.usersMessage(user_list)
+        channel.users_message(user_list)
 
     def _users_end_received(self, **kw):
         """
@@ -333,7 +333,7 @@ class ServerConnection(object):
             print "REPORT THIS: usersEndReceived, channel not found"
             return
 
-        channel.usersMessageEnd()
+        channel.users_message_end()
         self._print_line("USERS OF " + channel_name)
         self._print_line(" ".join(channel.userlist))
 
@@ -347,7 +347,7 @@ class ServerConnection(object):
         full_mask = kw['full_mask']
 
         for channel in self._channel_list:
-            channel.removeUser(nick)
+            channel.remove_user(nick)
 
         self._print_line(nick + " has quit.")
 
@@ -371,7 +371,7 @@ class ServerConnection(object):
         if not channel:
             return
 
-        channel.removeUser(nick)
+        channel.remove_user(nick)
 
         self._print_line(nick + " has part " + channel_name)
 
@@ -393,7 +393,7 @@ class ServerConnection(object):
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
-            channel.addUser(nick)
+            channel.add_user(nick)
 
         self._print_line(nick + " has joined " + channel_name)
         for dm in self._dynamic_modules:

@@ -9,7 +9,7 @@ class IrcChannel(object):
         self.userlist_complete = True
         self.topic = ""
 
-    def usersMessage(self, userlist):
+    def users_message(self, userlist):
         """
         Usually received on join. Count of these
         messages depend on user count on the channel.
@@ -20,14 +20,14 @@ class IrcChannel(object):
         else:
             self.userlist += userlist
 
-    def usersMessageEnd(self):
+    def users_message_end(self):
         """
         When received, states that all users on channel
         have been listed and userlist is therefore complete.
         """
         self.userlist_complete = True
 
-    def removeUser(self, nick):
+    def remove_user(self, nick):
         """
         Tries to remove a user from the channel.
         """
@@ -36,12 +36,9 @@ class IrcChannel(object):
         except ValueError:
             pass
 
-    def addUser(self, nick):
+    def add_user(self, nick):
         """
         Adds user to channel if not already added.
         """
         if not nick in self.userlist:
             self.userlist.append(nick)
-
-
-		

@@ -17,18 +17,17 @@ class ModuleLoader(BotScript):
 
         # checking if we got a relevant message
         try:
-            if self.tryLoad(source, message):
+            if self._try_load(source, message):
                 return
-            if self.tryReload(source, message):
+            if self._try_reload(source, message):
                 return
-            if self.tryUnload(source, message):
+            if self._try_unload(source, message):
                 return
 
         except Exception as e:
             self.say(source, "error: " + str(e))
 
-
-    def tryLoad(self, source, message):
+    def _try_load(self, source, message):
         if not message.startswith("!load"):
             return False
 
@@ -48,7 +47,7 @@ class ModuleLoader(BotScript):
         return True
 
 
-    def tryReload(self, source, message):
+    def _try_reload(self, source, message):
         if not message.startswith("!reload"):
             return False
 
@@ -59,7 +58,7 @@ class ModuleLoader(BotScript):
             if dm.module_name != module_name:
                 continue
 
-            dm.reloadModule()
+            dm.reload_module()
             self.say(source, "reloaded " + str(dm.classvar))
             return True
 
@@ -68,8 +67,7 @@ class ModuleLoader(BotScript):
         self.say(source, "unable to find module with name " + module_name)
         return True
 
-
-    def tryUnload(self, source, message):
+    def _try_unload(self, source, message):
         if not message.startswith("!unload"):
             return False
 
