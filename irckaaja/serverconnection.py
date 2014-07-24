@@ -55,6 +55,10 @@ class ServerConnection(object):
             MessageType.END_OF_USERS: self._users_end_received,
             MessageType.CHANNEL_MESSAGE: self._channel_message_received,
             MessageType.UNKNOWN: self._unknown_message_received,
+            MessageType.CTCP_TIME: self._ctcp_message_received,
+            MessageType.CTCP_VERSION: self._ctcp_version_received,
+            MessageType.CTCP_PING: self._ctcp_message_received,
+            MessageType.CTCP_DCC: self._ctcp_message_received,
         }
 
     def connect(self):
@@ -186,6 +190,7 @@ class ServerConnection(object):
         """
         Sends PRIVMSG to target.
         """
+        print message[0], message[-1]
         self._write("PRIVMSG " + target + " :" + message + "\r\n")
 
     def PING(self, message):
@@ -193,6 +198,12 @@ class ServerConnection(object):
         Sends PING to server.
         """
         self._write("PING " + message + "\r\n")
+
+    def CTCP(self, target, message):
+        self.PRIVMSG(target, str("\x01" + message + "\x01"))
+
+    def NOTICE(self, target, message):
+        self._write("NOTICE " + target + " :" + message + "\r\n")
 
     def _on_connect(self):
         """
@@ -433,6 +444,13 @@ class ServerConnection(object):
             channel.topic = topic
 
         self._print_line("Topic in " + channel_name + ": " + topic)
+
+    def _ctcp_message_received(self, **kw):
+        self._print_line("CTCP: " + str(kw))
+
+    def _ctcp_version_received(self, **kw):
+        ":juke!juke@jukk.is NOTICE irckaaja :VERSION ?l? hakkeroi!"
+        self.NOTICE(kw['source'], "VERSION irckaaja 0.1.0")
 
     def _unknown_message_received(self, **kw):
         self._print_line(kw['message'])

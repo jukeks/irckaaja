@@ -15,7 +15,11 @@ class MessageType(object):
     USERS = 10
     END_OF_USERS = 11
     CHANNEL_MESSAGE = 12
-    UNKNOWN = 13
+    CTCP_VERSION = 13
+    CTCP_PING = 14
+    CTCP_TIME = 15
+    CTCP_DCC = 16
+    UNKNOWN = 255
 
 
 class ParsedMessage(object):
@@ -29,6 +33,13 @@ class MessageParser(object):
     Class handles irc messages and notifies server_connection
     about them.
     """
+
+    def _check_for_ctcp(self, message):
+        ':juke!juke@jukk.is PRIVMSG irckaaja :\x01VERSION\x01'
+        try:
+            return ord(message[0]) == 1 and ord(message[-1]) == 1
+        except ValueError:
+            pass
 
     def _check_for_privmsg(self, message):
         ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
@@ -62,7 +73,32 @@ class MessageParser(object):
         except AttributeError:
             return
 
+        if self._check_for_ctcp(params['message']):
+            return self._parse_ctcp_message(params)
+
         return ParsedMessage(type_, **params)
+
+    def _parse_ctcp_message(self, params):
+        message = params['message']
+
+        if message == "\x01VERSION\x01":
+            return ParsedMessage(MessageType.CTCP_VERSION, **params)
+
+        elif message.startswith("\x01PING"):
+            try:
+                _, params['time'], params['id'] = message.replace("\x01", "").split(" ")
+                return ParsedMessage(MessageType.CTCP_PING, **params)
+            except ValueError:
+                return MessageType.UNKNOWN
+
+        elif message.startswith("\x01TIME\x01"):
+            return ParsedMessage(MessageType.CTCP_TIME, **params)
+
+        elif message.startswith("\x01DCC"):
+            return ParsedMessage(MessageType.CTCP_DCC, **params)
+
+        else:
+            return MessageType.UNKNOWN
 
     def _checkForNickInUse(self, message):
         ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
