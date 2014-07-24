@@ -450,7 +450,7 @@ class ServerConnection(object):
 
     def _ctcp_version_received(self, **kw):
         ":juke!juke@jukk.is NOTICE irckaaja :VERSION ?l? hakkeroi!"
-        self.NOTICE(kw['source'], "VERSION irckaaja 0.1.0")
+        self.NOTICE(kw['source'], "\x01VERSION irckaaja 0.1.0\x01")
 
     def _unknown_message_received(self, **kw):
         self._print_line(kw['message'])
