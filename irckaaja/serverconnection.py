@@ -94,6 +94,9 @@ class ServerConnection(object):
             self._connect()
             self._read()
 
+            if not self.alive:
+                break
+
             self._print_line("Trying again in 60 seconds.")
             self._sleep(60)
 
@@ -229,7 +232,6 @@ class ServerConnection(object):
         """
         Called when the thread is wanted dead.
         """
-        self._print_line(self.networkname + " dying.")
         self.alive = False
         for m in self.dynamic_modules:
             m.instance.kill()
