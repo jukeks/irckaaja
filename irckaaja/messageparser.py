@@ -287,5 +287,3 @@ class MessageParser(object):
 
         return parsed_messages, buff
 
-#p = MessageParser(None)
-#p.checkForJoin(None)
