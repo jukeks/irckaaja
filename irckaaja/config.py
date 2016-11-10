@@ -10,7 +10,7 @@ class Config(object):
 
     def __init__(self, configfilename=CONFIGFILENAME):
         self.filename = configfilename
-        self.config = ConfigObj(self.filename, list_values=True)
+        self.config = ConfigObj(self.filename, list_values=True, encoding='utf-8')
 
     def servers(self):
         """

@@ -105,7 +105,7 @@ class ServerConnection(object):
         Prints and writes message to server.
         """
         self._print_line(message[:-1])
-        self._socket.send(message)
+        self._socket.send(bytearray(message, 'utf-8'))
 
     def _check_ping_time(self):
         return time.time() - self._last_ping < ServerConnection.PING_INTERVAL_THRESHOLD
@@ -133,6 +133,8 @@ class ServerConnection(object):
 
             if not tmp:
                 break
+
+            tmp = tmp.decode('utf-8')
 
             buff += tmp
             parsed_messages, remainder = self._parser.parse_buffer(buff)
