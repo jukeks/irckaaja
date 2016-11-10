@@ -154,7 +154,7 @@ class ServerConnection(object):
         """
         Prints message with timestamp.
         """
-        print time.strftime("%H:%M:%S") + " |" + self.networkname + "| " + message
+        print(time.strftime("%H:%M:%S") + " |" + self.networkname + "| " + message)
 
     def NICK(self, nick):
         """
@@ -193,7 +193,6 @@ class ServerConnection(object):
         """
         Sends PRIVMSG to target.
         """
-        print message[0], message[-1]
         self._write("PRIVMSG " + target + " :" + message + "\r\n")
 
     def PING(self, message):
@@ -219,7 +218,7 @@ class ServerConnection(object):
             try:
                 dm.instance.on_connect()
             except Exception as e:
-                print e
+                print(e)
 
     def _join_channels(self):
         """
@@ -250,7 +249,7 @@ class ServerConnection(object):
             try:
                 dm.instance.on_private_message(source, message, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _channel_message_received(self, **kw):
         """
@@ -269,7 +268,7 @@ class ServerConnection(object):
             try:
                 dm.instance.on_channel_message(source, channel, message, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _ping_received(self, **kw):
         """
@@ -348,7 +347,7 @@ class ServerConnection(object):
     def _quit_received(self, **kw):
         """
         Called when a QUIT message has been received. Calls
-        onQuit() on DynamicModules
+        on_quit() on DynamicModules
         """
 
         nick = kw['nick']
@@ -363,12 +362,12 @@ class ServerConnection(object):
             try:
                 dm.instance.on_quit(nick, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _part_received(self, **kw):
         """
         Called when a PART message has been received. Calls
-        onPart() on DynamicModules
+        on_part() on DynamicModules
         """
 
         nick = kw['nick']
@@ -387,12 +386,12 @@ class ServerConnection(object):
             try:
                 dm.instance.on_part(nick, channel_name, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _join_received(self, **kw):
         """
         Called when a JOIN message has been received. Calls
-        onJoin() on DynamicModules
+        on_join() on DynamicModules
         """
 
         nick = kw['nick']
@@ -408,11 +407,11 @@ class ServerConnection(object):
             try:
                 dm.instance.on_join(nick, channel_name, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _topic_received(self, **kw):
         """
-        Called when topic is changed on a channel. Calls onTopic()
+        Called when topic is changed on a channel. Calls on_topic()
         on DynamicModules
         """
 
@@ -430,7 +429,7 @@ class ServerConnection(object):
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)
             except Exception as e:
-                print e
+                print(e)
 
     def _topic_reply_received(self, **kw):
         """
