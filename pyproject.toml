@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "irckaaja"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Jukka-Pekka Virtanen <virtanen@jukk.is>"]
 readme = "README.md"
@@ -26,6 +26,7 @@ pyupgrade = "*"
 setuptools = "*"
 pytest = "*"
 build = "*"
+twine = "*"
 
 [tool.black]
 line-length = 80
