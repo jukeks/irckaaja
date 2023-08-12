@@ -12,6 +12,8 @@ shove = "*"
 
 [tool.mypy]
 python_version = "3.11"
+disallow_untyped_defs = "True"
+ignore_missing_imports = "True"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "*"

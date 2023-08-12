@@ -7,7 +7,9 @@ class HelloWorld(BotScript):
     in every channel in a network.
     """
 
-    def on_channel_message(self, nick, channel_name, message, full_mask):
+    def on_channel_message(
+        self, nick: str, channel_name: str, message: str, full_mask: str
+    ) -> None:
         if message.startswith("moi"):
-            self.say(channel_name, "mutsis sano moi, " + nick)
+            self.say(channel_name, "moi, " + nick)
             return

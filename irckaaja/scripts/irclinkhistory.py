@@ -1,12 +1,16 @@
 import time
+from typing import Any
 
 import shove
 
 from irckaaja.botscript import BotScript
+from irckaaja.serverconnection import ServerConnection
 
 
 class IrcLinkHistory(BotScript):
-    def __init__(self, server_connection, config):
+    def __init__(
+        self, server_connection: ServerConnection, config: dict[str, Any]
+    ) -> None:
         BotScript.__init__(self, server_connection, config)
 
         self.store_path = config["store_path"]
@@ -22,7 +26,7 @@ class IrcLinkHistory(BotScript):
                 "bsddb://" + self.store_path + "/" + channel + ".db"
             )
 
-    def _get_diff_string(self, t1, t2):
+    def _get_diff_string(self, t1: float, t2: float) -> str:
         diff = t1 - t2
 
         if diff < 60:
@@ -68,7 +72,9 @@ class IrcLinkHistory(BotScript):
                 )
             )
 
-    def on_channel_message(self, nick, channel_name, message, full_mask):
+    def on_channel_message(
+        self, nick: str, channel_name: str, message: str, full_mask: str
+    ) -> None:
         urls = self.parse_urls(message)
 
         if not urls:

@@ -10,7 +10,9 @@ class ModuleLoader(BotScript):
     between changes.
     """
 
-    def on_private_message(self, source, message, full_mask):
+    def on_private_message(
+        self, source: str, message: str, full_mask: str
+    ) -> None:
         # authenticating
         if full_mask != self.server_connection.owner:
             return
@@ -27,7 +29,7 @@ class ModuleLoader(BotScript):
         except Exception as e:
             self.say(source, "error: " + str(e))
 
-    def _try_load(self, source, message):
+    def _try_load(self, source: str, message: str) -> bool:
         if not message.startswith("!load"):
             return False
 
@@ -52,7 +54,7 @@ class ModuleLoader(BotScript):
         self.say(source, "loaded " + str(dm.classvar))
         return True
 
-    def _try_reload(self, source, message):
+    def _try_reload(self, source: str, message: str) -> bool:
         if not message.startswith("!reload"):
             return False
 
@@ -71,7 +73,7 @@ class ModuleLoader(BotScript):
         self.say(source, "unable to find module with name " + module_name)
         return True
 
-    def _try_unload(self, source, message):
+    def _try_unload(self, source: str, message: str) -> bool:
         if not message.startswith("!unload"):
             return False
 

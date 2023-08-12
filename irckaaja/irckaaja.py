@@ -1,11 +1,11 @@
-from optparse import OptionParser
+from optparse import OptionParser, Values
 from time import sleep
 
 from irckaaja.config import Config
 from irckaaja.serverconnection import ServerConnection
 
 
-def get_options():
+def get_options() -> Values:
     parser = OptionParser()
     parser.add_option(
         "-c",
@@ -20,14 +20,14 @@ def get_options():
     return options
 
 
-def main():
+def main() -> None:
     options = get_options()
     conf = Config(options.configfile)
     modulesd = conf.modules()
     bot_info = conf.bot()
     server_connection_list = []
 
-    for network_name, server_conf in conf.servers().iteritems():
+    for network_name, server_conf in conf.servers().items():
         join_list = conf.channels(network_name)
         server_connection_list.append(
             ServerConnection(

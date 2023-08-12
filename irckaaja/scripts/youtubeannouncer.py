@@ -1,6 +1,7 @@
 __author__ = "juke"
 import re
 import urllib
+from typing import Any
 from xml.dom import minidom
 
 from irckaaja.botscript import BotScript
@@ -9,7 +10,9 @@ APIURL = "http://gdata.youtube.com/feeds/api/videos/"
 
 
 class YoutubeAnnouncer(BotScript):
-    def on_channel_message(self, nick, target, message, full_mask):
+    def on_channel_message(
+        self, nick: str, target: str, message: str, full_mask: str
+    ) -> None:
         ids = self._parse_ids(message)
 
         if ids:
@@ -19,10 +22,10 @@ class YoutubeAnnouncer(BotScript):
                     self.say(target, "** " + title + " **")
 
     @staticmethod
-    def _parse_ids(message):
+    def _parse_ids(message: str) -> list[str]:
         urls = BotScript.parse_urls(message)
         if not urls:
-            return
+            return []
         ids = []
         for url in urls:
             match = re.match(
@@ -41,8 +44,8 @@ class YoutubeAnnouncer(BotScript):
         return ids
 
     @staticmethod
-    def _query_title(id):
-        xml = urllib.urlopen(APIURL + id).read()
+    def _query_title(id: str) -> Any:
+        xml = urllib.request.urlopen(APIURL + id).read()
         return (
             minidom.parseString(xml)
             .getElementsByTagName("title")[0]

@@ -3,13 +3,13 @@ class IrcChannel:
     Channel datastructure. Keeps track of users.
     """
 
-    def __init__(self, name, userlist):
+    def __init__(self, name: str, userlist: list[str]) -> None:
         self.name = name
         self.userlist = userlist
         self.userlist_complete = True
         self.topic = ""
 
-    def users_message(self, userlist):
+    def users_message(self, userlist: list[str]) -> None:
         """
         Usually received on join. Count of these
         messages depend on user count on the channel.
@@ -20,14 +20,14 @@ class IrcChannel:
         else:
             self.userlist += userlist
 
-    def users_message_end(self):
+    def users_message_end(self) -> None:
         """
         When received, states that all users on channel
         have been listed and userlist is therefore complete.
         """
         self.userlist_complete = True
 
-    def remove_user(self, nick):
+    def remove_user(self, nick: str) -> None:
         """
         Tries to remove a user from the channel.
         """
@@ -36,7 +36,7 @@ class IrcChannel:
         except ValueError:
             pass
 
-    def add_user(self, nick):
+    def add_user(self, nick: str) -> None:
         """
         Adds user to channel if not already added.
         """
