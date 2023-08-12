@@ -40,5 +40,5 @@ class IrcChannel:
         """
         Adds user to channel if not already added.
         """
-        if not nick in self.userlist:
+        if nick not in self.userlist:
             self.userlist.append(nick)

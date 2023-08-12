@@ -1,3 +1,6 @@
+import importlib
+
+
 class DynamicModule:
     """
     This class holds Python scripts.
@@ -7,7 +10,8 @@ class DynamicModule:
         """
         Initialises and calls load().
 
-        server_connection: connection to the network in which the module is related
+        server_connection: connection to the network in which the module is
+        related
         modulename: name of the module
         classvar: script class
         instance: instance of classvar
@@ -25,7 +29,7 @@ class DynamicModule:
         Reloads the module, the class and overwrites the instance.
         """
         self.instance.kill()
-        reload(self.module)
+        importlib.reload(self.module)
         self.classvar = getattr(self.module, self.module_name)
         self.instance = self.classvar(self.server_connection, self.module_config)
 

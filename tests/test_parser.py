@@ -1,6 +1,6 @@
 import unittest
 
-from irckaaja.messageparser import *
+from irckaaja.messageparser import MessageParser, MessageType
 
 
 class TestParser(unittest.TestCase):
@@ -16,12 +16,8 @@ class TestParser(unittest.TestCase):
             "Message was not recognized as PRIVATE_MESSAGE",
         )
 
-        self.assertEqual(
-            parsed.params["source"], "juke", "Nick was not parsed from PRIVATE_MESSAGE"
-        )
-        self.assertEqual(
-            parsed.params["message"], "lol", "Message was not parsed from message"
-        )
+        self.assertEqual(parsed.params["source"], "juke", "Nick was not parsed from PRIVATE_MESSAGE")
+        self.assertEqual(parsed.params["message"], "lol", "Message was not parsed from message")
 
     def test_channel_message(self):
         channel_msg = ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf"
@@ -35,12 +31,8 @@ class TestParser(unittest.TestCase):
             "Message was not recognized as CHANNEL_MESSAGE",
         )
 
-        self.assertEqual(
-            parsed.params["source"], "juke", "Nick was not parsed from message"
-        )
-        self.assertEqual(
-            parsed.params["message"], "asdfadsf", "Message was not parsed from message"
-        )
+        self.assertEqual(parsed.params["source"], "juke", "Nick was not parsed from message")
+        self.assertEqual(parsed.params["message"], "asdfadsf", "Message was not parsed from message")
         self.assertEqual(
             parsed.params["channel_name"],
             "#testidevi",

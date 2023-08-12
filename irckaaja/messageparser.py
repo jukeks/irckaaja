@@ -126,9 +126,7 @@ class MessageParser:
 
         channel = match.group(1)
         userlist = match.group(2).split(" ")
-        return ParsedMessage(
-            MessageType.USERS, channel_name=channel, user_list=userlist
-        )
+        return ParsedMessage(MessageType.USERS, channel_name=channel, user_list=userlist)
 
     def _check_for_users_end(self, message):
         users_pattern = re.compile(
@@ -214,9 +212,7 @@ class MessageParser:
         nick = match.group(2)
         channel_name = match.group(5)
 
-        return ParsedMessage(
-            MessageType.PART, nick=nick, channel_name=channel_name, full_mask=full_mask
-        )
+        return ParsedMessage(MessageType.PART, nick=nick, channel_name=channel_name, full_mask=full_mask)
 
     def _check_for_join(self, message):
         # message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
@@ -240,9 +236,7 @@ class MessageParser:
         nick = match.group(2)
         channel_name = match.group(5)
 
-        return ParsedMessage(
-            MessageType.JOIN, nick=nick, full_mask=full_mask, channel_name=channel_name
-        )
+        return ParsedMessage(MessageType.JOIN, nick=nick, full_mask=full_mask, channel_name=channel_name)
 
     def _check_for_topic_reply(self, message):
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
@@ -265,9 +259,7 @@ class MessageParser:
         channel_name = match.group(2)
         topic = match.group(3)
 
-        return ParsedMessage(
-            MessageType.TOPIC_REPLY, nick=nick, channel_name=channel_name, topic=topic
-        )
+        return ParsedMessage(MessageType.TOPIC_REPLY, nick=nick, channel_name=channel_name, topic=topic)
 
     def _check_for_topic(self, message):
         ":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"

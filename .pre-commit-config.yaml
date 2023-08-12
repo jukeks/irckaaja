@@ -37,7 +37,7 @@ repos:
         types: [python]
       - id: flake8
         name: flake8
-        entry: poetry run flake8
+        entry: poetry run flake8 --max-line-length 120
         language: system
         types: [python]
       - id: mypy

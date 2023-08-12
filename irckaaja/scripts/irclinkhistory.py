@@ -14,16 +14,10 @@ class IrcLinkHistory(BotScript):
 
         self.store_path = config["store_path"]
 
-        self.channels = (
-            [config["channels"]]
-            if isinstance(config["channels"], "".__class__)
-            else config["channels"]
-        )
+        self.channels = [config["channels"]] if isinstance(config["channels"], "".__class__) else config["channels"]
         self.dbs = {}
         for channel in self.channels:
-            self.dbs[channel] = shove.Shove(
-                "bsddb://" + self.store_path + "/" + channel + ".db"
-            )
+            self.dbs[channel] = shove.Shove("bsddb://" + self.store_path + "/" + channel + ".db")
 
     def _getDiffString(self, t1, t2):
         diff = t1 - t2

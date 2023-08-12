@@ -29,9 +29,7 @@ def main():
 
     for network_name, server_conf in conf.servers().iteritems():
         join_list = conf.channels(network_name)
-        server_connection_list.append(
-            ServerConnection(network_name, server_conf, bot_info, join_list, modulesd)
-        )
+        server_connection_list.append(ServerConnection(network_name, server_conf, bot_info, join_list, modulesd))
 
     for s in server_connection_list:
         s.connect()

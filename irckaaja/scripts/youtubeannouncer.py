@@ -44,9 +44,4 @@ class YoutubeAnnouncer(BotScript):
     @staticmethod
     def _query_title(id):
         xml = urllib2.urlopen(APIURL + id).read()
-        return (
-            minidom.parseString(xml)
-            .getElementsByTagName("title")[0]
-            .childNodes[0]
-            .nodeValue
-        )
+        return minidom.parseString(xml).getElementsByTagName("title")[0].childNodes[0].nodeValue

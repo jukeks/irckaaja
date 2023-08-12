@@ -15,9 +15,7 @@ class ServerConnection:
 
     PING_INTERVAL_THRESHOLD = 300  # 300 seconds
 
-    def __init__(
-        self, networkname, server_config, bot_config, joinlist, modules_config
-    ):
+    def __init__(self, networkname, server_config, bot_config, joinlist, modules_config):
         self.alive = True
         self.connected = False
         self.hostname = server_config["hostname"]
@@ -39,9 +37,7 @@ class ServerConnection:
         self._channel_list = []
 
         self._modules_config = modules_config
-        self.dynamic_modules = (
-            []
-        )  # [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules = []  # [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
         self._last_ping = time.time()
 
@@ -124,7 +120,7 @@ class ServerConnection:
         while self.alive and self._check_ping_time():
             try:
                 tmp = self._socket.recv(4096)
-            except socket.timeout as e:
+            except socket.timeout:
                 continue
             except OSError as e:
                 self._print_line(str(e))
@@ -431,9 +427,7 @@ class ServerConnection:
         if channel:
             channel.topic = topic
 
-        self._print_line(
-            nick + " changed the topic of " + channel_name + " to: " + topic
-        )
+        self._print_line(nick + " changed the topic of " + channel_name + " to: " + topic)
         for dm in self.dynamic_modules:
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)
