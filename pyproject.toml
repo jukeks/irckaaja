@@ -6,12 +6,12 @@ authors = ["Jukka-Pekka Virtanen <virtanen@jukk.is>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 configobj = "*"
 shove = "*"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 disallow_untyped_defs = "True"
 ignore_missing_imports = "True"
 

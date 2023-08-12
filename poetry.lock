@@ -162,20 +162,20 @@ testing = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "diff-cover (>=7.5)", "p
 
 [[package]]
 name = "flake8"
-version = "2.3.0"
-description = "the modular source code checker: pep8, pyflakes and co"
+version = "6.1.0"
+description = "the modular source code checker: pep8 pyflakes and co"
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.8.1"
 files = [
-    {file = "flake8-2.3.0-py2.py3-none-any.whl", hash = "sha256:c99cc9716d6655d9c8bcb1e77632b8615bf0abd282d7abd9f5c2148cad7fc669"},
-    {file = "flake8-2.3.0.tar.gz", hash = "sha256:5ee1a43ccd0716d6061521eec6937c983efa027793013e572712c4da55c7c83e"},
+    {file = "flake8-6.1.0-py2.py3-none-any.whl", hash = "sha256:ffdfce58ea94c6580c77888a86506937f9a1a227dfcd15f245d694ae20a6b6e5"},
+    {file = "flake8-6.1.0.tar.gz", hash = "sha256:d5b3857f07c030bdb5bf41c7f53799571d75c4491748a3adcd47de929e34cd23"},
 ]
 
 [package.dependencies]
-mccabe = ">=0.2.1"
-pep8 = ">=1.5.7"
-pyflakes = ">=0.8.1"
+mccabe = ">=0.7.0,<0.8.0"
+pycodestyle = ">=2.11.0,<2.12.0"
+pyflakes = ">=3.1.0,<3.2.0"
 
 [[package]]
 name = "futures"
@@ -352,18 +352,6 @@ files = [
 ]
 
 [[package]]
-name = "pep8"
-version = "1.7.1"
-description = "Python style guide checker"
-category = "dev"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pep8-1.7.1-py2.py3-none-any.whl", hash = "sha256:b22cfae5db09833bb9bd7c8463b53e1a9c9b39f12e304a8d0bba729c501827ee"},
-    {file = "pep8-1.7.1.tar.gz", hash = "sha256:fe249b52e20498e59e0b5c5256aa52ee99fc295b26ec9eaa85776ffdb9fe6374"},
-]
-
-[[package]]
 name = "platformdirs"
 version = "3.10.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -415,6 +403,18 @@ pyyaml = ">=5.1"
 virtualenv = ">=20.10.0"
 
 [[package]]
+name = "pycodestyle"
+version = "2.11.0"
+description = "Python style guide checker"
+category = "dev"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pycodestyle-2.11.0-py2.py3-none-any.whl", hash = "sha256:5d1013ba8dc7895b548be5afb05740ca82454fd899971563d2ef625d090326f8"},
+    {file = "pycodestyle-2.11.0.tar.gz", hash = "sha256:259bcc17857d8a8b3b4a2327324b79e5f020a13c16074670f9c8c8f872ea76d0"},
+]
+
+[[package]]
 name = "pyflakes"
 version = "3.1.0"
 description = "passive checker of Python programs"
@@ -451,18 +451,18 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "pyupgrade"
-version = "3.8.0"
+version = "3.10.1"
 description = "A tool to automatically upgrade syntax for newer versions."
 category = "dev"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.8.1"
 files = [
-    {file = "pyupgrade-3.8.0-py2.py3-none-any.whl", hash = "sha256:08d0e6129f5e9da7e7a581bdbea689e0d49c3c93eeaf156a07ae2fd794f52660"},
-    {file = "pyupgrade-3.8.0.tar.gz", hash = "sha256:1facb0b8407cca468dfcc1d13717e3a85aa37b9e6e7338664ad5bfe5ef50c867"},
+    {file = "pyupgrade-3.10.1-py2.py3-none-any.whl", hash = "sha256:f565b4d26daa46ed522e98746834e77e444269103f8bc04413d77dad95169a24"},
+    {file = "pyupgrade-3.10.1.tar.gz", hash = "sha256:1d8d138c2ccdd3c42b1419230ae036d5607dc69465a26feacc069642fc8d1b90"},
 ]
 
 [package.dependencies]
-tokenize-rt = ">=3.2.0"
+tokenize-rt = ">=5.2.0"
 
 [[package]]
 name = "pyyaml"
@@ -638,5 +638,5 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.8"
-content-hash = "025c2ef8157efbc421944dc79fffb5de3b704fdc795d23ccac1de53105c4fd8b"
+python-versions = "^3.9"
+content-hash = "23aa1e8e9125deab2ba55ef39ea1991a69678ff620b00393b8e64d881b64b1af"
