@@ -49,8 +49,7 @@ class DynamicModule:
         """
         Reloads the module, the class and overwrites the instance.
         """
-        if self.instance:
-            self.instance.kill()
+        self.instance.kill()
         importlib.reload(self.module)
         self.classvar = getattr(self.module, self.module_name)
         self.instance = self.classvar(
