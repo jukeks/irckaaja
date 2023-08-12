@@ -11,8 +11,9 @@ class TestParser(unittest.TestCase):
         assert parsed
 
         assert parsed.type == MessageType.PRIVATE_MESSAGE
-        assert parsed.params["source"] == "juke"
-        assert parsed.params["message"] == "lol"
+        assert parsed.private_message
+        assert parsed.private_message.source.nick == "juke"
+        assert parsed.private_message.message == "lol"
 
     def test_channel_message(self) -> None:
         channel_msg = ":juke!~Jukkis@example.org PRIVMSG #testidevi :asdfadsf"
@@ -20,9 +21,11 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_privmsg(channel_msg)
         assert parsed
         assert parsed.type == MessageType.CHANNEL_MESSAGE
-        assert parsed.params["source"] == "juke"
-        assert parsed.params["message"] == "asdfadsf"
-        assert parsed.params["channel_name"] == "#testidevi"
+        msg = parsed.channel_message
+        assert msg
+        assert msg.source.nick == "juke"
+        assert msg.message == "asdfadsf"
+        assert msg.channel == "#testidevi"
 
     def test_ctcp(self) -> None:
         message = "\x01VERSION\x01"
@@ -37,8 +40,10 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_users(message)
         assert parsed
         assert parsed.type == MessageType.USERS
-        assert parsed.params["channel_name"] == "#channelname"
-        assert parsed.params["user_list"] == ["yournick", "@juke"]
+        msg = parsed.users_message
+        assert msg
+        assert msg.channel == "#channelname"
+        assert msg.users == ["yournick", "@juke"]
 
     def test_users_end_message(self) -> None:
         message = (
@@ -48,7 +53,9 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_users_end(message)
         assert parsed
         assert parsed.type == MessageType.END_OF_USERS
-        assert parsed.params["channel_name"] == "#channelname"
+        msg = parsed.users_end_message
+        assert msg
+        assert msg.channel == "#channelname"
 
     def test_join_message(self) -> None:
         message1 = ":nick1!webchat@123123123.example.net JOIN :#channel"
@@ -58,14 +65,18 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_join(message1)
         assert parsed
         assert parsed.type == MessageType.JOIN
-        assert parsed.params["nick"] == "nick1"
-        assert parsed.params["channel_name"] == "#channel"
+        msg = parsed.join_message
+        assert msg
+        assert msg.user.nick == "nick1"
+        assert msg.channel == "#channel"
 
         parsed = parser._check_for_join(message2)
         assert parsed
         assert parsed.type == MessageType.JOIN
-        assert parsed.params["nick"] == "nick2"
-        assert parsed.params["channel_name"] == "!channel"
+        msg = parsed.join_message
+        assert msg
+        assert msg.user.nick == "nick2"
+        assert msg.channel == "!channel"
 
     def test_part_message(self) -> None:
         message = ":nick!~Nick@asdf.fi PART #channeltv"
@@ -73,8 +84,10 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_part(message)
         assert parsed
         assert parsed.type == MessageType.PART
-        assert parsed.params["nick"] == "nick"
-        assert parsed.params["channel_name"] == "#channeltv"
+        msg = parsed.part_message
+        assert msg
+        assert msg.user.nick == "nick"
+        assert msg.channel == "#channeltv"
 
     def test_quit_message(self) -> None:
         message = ":nick!~Nick@asdf.fi QUIT :Signed off"
@@ -82,7 +95,9 @@ class TestParser(unittest.TestCase):
         parsed = parser._check_for_quit(message)
         assert parsed
         assert parsed.type == MessageType.QUIT
-        assert parsed.params["nick"] == "nick"
+        msg = parsed.quit_message
+        assert msg
+        assert msg.user.nick == "nick"
 
     def test_parse_messages(self) -> None:
         buff = (

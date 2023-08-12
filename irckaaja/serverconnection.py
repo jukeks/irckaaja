@@ -5,7 +5,23 @@ from typing import Any, Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
 from irckaaja.dynamicmodule import DynamicModule
-from irckaaja.messageparser import MessageParser, MessageType, ParsedMessage
+from irckaaja.messageparser import (
+    ChannelMessage,
+    CTCPVersionMessage,
+    EndOfMotdMessage,
+    JoinMessage,
+    MessageParser,
+    MessageType,
+    ParsedMessage,
+    PartMessage,
+    PingMessage,
+    PrivateMessage,
+    QuitMessage,
+    TopicMessage,
+    TopicReplyMessage,
+    UsersEndMessage,
+    UsersMessage,
+)
 
 
 class ServerConnection:
@@ -38,7 +54,6 @@ class ServerConnection:
 
         self._reader_thread = Thread(target=self._connection_loop)
         self._parser = MessageParser()
-        self._init_callback_table()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self._channel_list: List[IrcChannel] = []
@@ -50,26 +65,55 @@ class ServerConnection:
 
         self._last_ping = time.time()
 
-    def _init_callback_table(self) -> None:
-        self._receive_callbacks = {
-            MessageType.PRIVATE_MESSAGE: self._private_message_received,
-            MessageType.JOIN: self._join_received,
-            MessageType.PART: self._part_received,
-            MessageType.PING: self._ping_received,
-            MessageType.QUIT: self._quit_received,
-            MessageType.TOPIC: self._topic_received,
-            MessageType.END_OF_MOTD: self._motd_received,
-            # MessageType.NICK_IN_USE: self.ni,
-            MessageType.TOPIC_REPLY: self._topic_reply_received,
-            MessageType.USERS: self._users_received,
-            MessageType.END_OF_USERS: self._users_end_received,
-            MessageType.CHANNEL_MESSAGE: self._channel_message_received,
-            MessageType.UNKNOWN: self._unknown_message_received,
-            MessageType.CTCP_TIME: self._ctcp_message_received,
-            MessageType.CTCP_VERSION: self._ctcp_version_received,
-            MessageType.CTCP_PING: self._ctcp_message_received,
-            MessageType.CTCP_DCC: self._ctcp_message_received,
-        }
+    def _route_message(self, parsed: ParsedMessage) -> None:
+        type = parsed.type
+
+        if type == MessageType.PRIVATE_MESSAGE:
+            assert parsed.private_message
+            self._private_message_received(parsed.private_message)
+        elif type == MessageType.JOIN:
+            assert parsed.join_message
+            self._join_received(parsed.join_message)
+        elif type == MessageType.PART:
+            assert parsed.part_message
+            self._part_received(parsed.part_message)
+        elif type == MessageType.PING:
+            assert parsed.ping_message
+            self._ping_received(parsed.ping_message)
+        elif type == MessageType.QUIT:
+            assert parsed.quit_message
+            self._quit_received(parsed.quit_message)
+        elif type == MessageType.TOPIC:
+            assert parsed.topic_message
+            self._topic_received(parsed.topic_message)
+        elif type == MessageType.END_OF_MOTD:
+            assert parsed.end_of_motd_message
+            self._motd_received(parsed.end_of_motd_message)
+        elif type == MessageType.TOPIC_REPLY:
+            assert parsed.topic_reply_message
+            self._topic_reply_received(parsed.topic_reply_message)
+        elif type == MessageType.USERS:
+            assert parsed.users_message
+            self._users_received(parsed.users_message)
+        elif type == MessageType.END_OF_USERS:
+            assert parsed.users_end_message
+            self._users_end_received(parsed.users_end_message)
+        elif type == MessageType.CHANNEL_MESSAGE:
+            assert parsed.channel_message
+            self._channel_message_received(parsed.channel_message)
+        elif type == MessageType.UNKNOWN:
+            assert parsed.raw_message
+            self._unknown_message_received(parsed.raw_message)
+        elif type == MessageType.CTCP_VERSION:
+            assert parsed.ctcp_version_message
+            self._ctcp_version_received(parsed.ctcp_version_message)
+        elif type in [
+            MessageType.CTCP_TIME,
+            MessageType.CTCP_VERSION,
+            MessageType.CTCP_PING,
+            MessageType.CTCP_DCC,
+        ]:
+            self._ctcp_message_received()
 
     def connect(self) -> None:
         """
@@ -93,7 +137,6 @@ class ServerConnection:
                 self.set_user(self.username, self.realname)
 
                 self._last_ping = time.time()
-
                 break
 
             except Exception as e:
@@ -163,7 +206,7 @@ class ServerConnection:
         Handles a list of messages
         """
         for message in messages:
-            self._receive_callbacks[message.type](**message.params)
+            self._route_message(message)
 
     def _print_line(self, message: str) -> None:
         """
@@ -252,14 +295,14 @@ class ServerConnection:
         for m in self.dynamic_modules:
             m.instance.kill()
 
-    def _private_message_received(self, **kw: Any) -> None:
+    def _private_message_received(self, msg: PrivateMessage) -> None:
         """
         Called when a private message has been received. Prints it
-        and calls on_private_message() on DynamicModule instances.
+        and calls on_private_message() on BotScript instances.
         """
-        source = kw["source"]
-        message = kw["message"]
-        full_mask = kw["full_mask"]
+        source = msg.source.nick
+        message = msg.message
+        full_mask = msg.source.full_mask
         self._print_line("PRIVATE" + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
@@ -268,16 +311,15 @@ class ServerConnection:
             except Exception as e:
                 print(e)
 
-    def _channel_message_received(self, **kw: Any) -> None:
+    def _channel_message_received(self, msg: ChannelMessage) -> None:
         """
         Called when a PRIVMSG to a channel has been received. Prints it
-        and calls on_channel_message() on DynamicModule instances.
+        and calls on_channel_message() on BotScript instances.
         """
-
-        source = kw["source"]
-        message = kw["message"]
-        full_mask = kw["full_mask"]
-        channel = kw["channel_name"]
+        source = msg.source.nick
+        message = msg.message
+        full_mask = msg.source.full_mask
+        channel = msg.channel
 
         self._print_line(channel + " <" + source + "> " + message)
 
@@ -289,21 +331,21 @@ class ServerConnection:
             except Exception as e:
                 print(e)
 
-    def _ping_received(self, **kw: Any) -> None:
+    def _ping_received(self, msg: PingMessage) -> None:
         """
         Called when PING message has been received.
         """
 
         self._last_ping = time.time()
-        message = kw["message"]
+        message = msg.message
         self.send_pong(message)
 
-    def _motd_received(self, **kw: Any) -> None:
+    def _motd_received(self, msg: EndOfMotdMessage) -> None:
         """
         Called when the end of MOTD message
         has been received.
         """
-        message = kw["message"]
+        message = msg.message
 
         self._print_line(message)
         if not self.connected:
@@ -330,14 +372,14 @@ class ServerConnection:
         channel = IrcChannel(name, user_list)
         self._channel_list.append(channel)
 
-    def _users_received(self, **kw: Any) -> None:
+    def _users_received(self, msg: UsersMessage) -> None:
         """
         Called when USERS message is received. Notifies
         channel instance of the users.
         """
 
-        channel_name = kw["channel_name"]
-        user_list = kw["user_list"]
+        channel_name = msg.channel
+        user_list = msg.users
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -346,13 +388,13 @@ class ServerConnection:
 
         channel.users_message(user_list)
 
-    def _users_end_received(self, **kw: Any) -> None:
+    def _users_end_received(self, msg: UsersEndMessage) -> None:
         """
         Called when USERS message's end has been received.
         Notifies the channel instance.
         """
 
-        channel_name = kw["channel_name"]
+        channel_name = msg.channel
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -364,35 +406,32 @@ class ServerConnection:
         self._print_line("USERS OF " + channel_name)
         self._print_line(" ".join(channel.userlist))
 
-    def _quit_received(self, **kw: Any) -> None:
+    def _quit_received(self, msg: QuitMessage) -> None:
         """
         Called when a QUIT message has been received. Calls
-        on_quit() on DynamicModules
+        on_quit() on BotScripts
         """
 
-        nick = kw["nick"]
-        full_mask = kw["full_mask"]
-
         for channel in self._channel_list:
-            channel.remove_user(nick)
+            channel.remove_user(msg.user.nick)
 
-        self._print_line(nick + " has quit.")
+        self._print_line(msg.user.nick + " has quit.")
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_quit(nick, full_mask)
+                dm.instance.on_quit(msg.user.nick, msg.user.full_mask)
             except Exception as e:
                 print(e)
 
-    def _part_received(self, **kw: Any) -> None:
+    def _part_received(self, msg: PartMessage) -> None:
         """
         Called when a PART message has been received. Calls
-        on_part() on DynamicModules
+        on_part() on BotScripts
         """
 
-        nick = kw["nick"]
-        channel_name = kw["channel_name"]
-        full_mask = kw["full_mask"]
+        channel_name = msg.channel
+        nick = msg.user.nick
+        full_mask = msg.user.full_mask
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -408,15 +447,15 @@ class ServerConnection:
             except Exception as e:
                 print(e)
 
-    def _join_received(self, **kw: Any) -> None:
+    def _join_received(self, msg: JoinMessage) -> None:
         """
         Called when a JOIN message has been received. Calls
-        on_join() on DynamicModules
+        on_join() on BotScripts
         """
 
-        nick = kw["nick"]
-        channel_name = kw["channel_name"]
-        full_mask = kw["full_mask"]
+        nick = msg.user.nick
+        channel_name = msg.channel
+        full_mask = msg.user.full_mask
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -429,16 +468,16 @@ class ServerConnection:
             except Exception as e:
                 print(e)
 
-    def _topic_received(self, **kw: Any) -> None:
+    def _topic_received(self, msg: TopicMessage) -> None:
         """
         Called when topic is changed on a channel. Calls on_topic()
-        on DynamicModules
+        on BotScripts
         """
 
-        nick = kw["nick"]
-        channel_name = kw["channel_name"]
-        full_mask = kw["full_mask"]
-        topic = kw["topic"]
+        nick = msg.user.nick
+        channel_name = msg.channel
+        full_mask = msg.user.full_mask
+        topic = msg.topic
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -453,14 +492,14 @@ class ServerConnection:
             except Exception as e:
                 print(e)
 
-    def _topic_reply_received(self, **kw: Any) -> None:
+    def _topic_reply_received(self, msg: TopicReplyMessage) -> None:
         """
         Called when server responds to client's /topic or server informs
         of the topic on joined channel.
         """
 
-        channel_name = kw["channel_name"]
-        topic = kw["topic"]
+        channel_name = msg.channel
+        topic = msg.topic
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -468,15 +507,17 @@ class ServerConnection:
 
         self._print_line("Topic in " + channel_name + ": " + topic)
 
-    def _ctcp_message_received(self, **kw: Any) -> None:
-        self._print_line("CTCP: " + str(kw))
+    def _ctcp_message_received(
+        self,
+    ) -> None:
+        self._print_line("CTCP")
 
-    def _ctcp_version_received(self, **kw: Any) -> None:
+    def _ctcp_version_received(self, msg: CTCPVersionMessage) -> None:
         ":juke!juke@jukk.is NOTICE irckaaja :VERSION ?l? hakkeroi!"
-        self.send_notice(kw["source"], "\x01VERSION irckaaja 0.1.0\x01")
+        self.send_notice(msg.user.nick, "\x01VERSION irckaaja 0.1.0\x01")
 
-    def _unknown_message_received(self, **kw: Any) -> None:
-        self._print_line(kw["message"])
+    def _unknown_message_received(self, msg: str) -> None:
+        self._print_line(msg)
 
     def _sleep(self, seconds: float) -> None:
         """
