@@ -36,7 +36,9 @@ class ModuleLoader(BotScript):
         # Not loading if it's already loaded
         for dm in self.server_connection.dynamic_modules:
             if dm.module_name == module_name:
-                self.say(source, "module " + str(dm.classvar) + " already loaded")
+                self.say(
+                    source, "module " + str(dm.classvar) + " already loaded"
+                )
                 return True
 
         # Loading and appending to the list

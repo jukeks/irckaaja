@@ -31,7 +31,9 @@ class DynamicModule:
         self.instance.kill()
         importlib.reload(self.module)
         self.classvar = getattr(self.module, self.module_name)
-        self.instance = self.classvar(self.server_connection, self.module_config)
+        self.instance = self.classvar(
+            self.server_connection, self.module_config
+        )
 
     def load(self):
         """
@@ -46,4 +48,6 @@ class DynamicModule:
             -1,
         )
         self.classvar = getattr(self.module, self.module_name)
-        self.instance = self.classvar(self.server_connection, self.module_config)
+        self.instance = self.classvar(
+            self.server_connection, self.module_config
+        )

@@ -4,7 +4,7 @@ import time
 
 class BotScript:
     """
-    "Abstract" script class. Should be inherited by script classes.
+    Abstract script class. Should be inherited by script classes.
     See HelloWorld in scripts.helloworld.py for example.
     """
 
@@ -33,7 +33,7 @@ class BotScript:
     def kill(self):
         self.alive = False
 
-    # Methods below can be implemented in your script class if you like.
+    # Methods below can be implemented in your script class .
     # That way you can subscribe to those messages.
     def on_channel_message(self, nick, target, message, full_mask):
         """

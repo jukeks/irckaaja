@@ -2,10 +2,8 @@ import socket
 import time
 from threading import Thread
 
-from channel import IrcChannel
-from messageparser import MessageParser, MessageType
-
-# Protocol source: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
+from irckaaja.channel import IrcChannel
+from irckaaja.messageparser import MessageParser, MessageType
 
 
 class ServerConnection:
@@ -15,7 +13,9 @@ class ServerConnection:
 
     PING_INTERVAL_THRESHOLD = 300  # 300 seconds
 
-    def __init__(self, networkname, server_config, bot_config, joinlist, modules_config):
+    def __init__(
+        self, networkname, server_config, bot_config, joinlist, modules_config
+    ):
         self.alive = True
         self.connected = False
         self.hostname = server_config["hostname"]
@@ -37,7 +37,9 @@ class ServerConnection:
         self._channel_list = []
 
         self._modules_config = modules_config
-        self.dynamic_modules = []  # [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules = (
+            []
+        )  # [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
         self._last_ping = time.time()
 
@@ -109,7 +111,10 @@ class ServerConnection:
         self._socket.send(bytearray(message, "utf-8"))
 
     def _check_ping_time(self):
-        return time.time() - self._last_ping < ServerConnection.PING_INTERVAL_THRESHOLD
+        return (
+            time.time() - self._last_ping
+            < ServerConnection.PING_INTERVAL_THRESHOLD
+        )
 
     def _read(self):
         """
@@ -157,7 +162,9 @@ class ServerConnection:
         """
         Prints message with timestamp.
         """
-        print(time.strftime("%H:%M:%S") + " |" + self.networkname + "| " + message)
+        print(
+            time.strftime("%H:%M:%S") + " |" + self.networkname + "| " + message
+        )
 
     def NICK(self, nick):
         """
@@ -269,7 +276,9 @@ class ServerConnection:
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_channel_message(source, channel, message, full_mask)
+                dm.instance.on_channel_message(
+                    source, channel, message, full_mask
+                )
             except Exception as e:
                 print(e)
 
@@ -427,7 +436,9 @@ class ServerConnection:
         if channel:
             channel.topic = topic
 
-        self._print_line(nick + " changed the topic of " + channel_name + " to: " + topic)
+        self._print_line(
+            nick + " changed the topic of " + channel_name + " to: " + topic
+        )
         for dm in self.dynamic_modules:
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)

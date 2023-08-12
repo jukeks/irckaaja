@@ -89,7 +89,9 @@ class MessageParser:
 
         elif message.startswith("\x01PING"):
             try:
-                _, params["time"], params["id"] = message.replace("\x01", "").split(" ")
+                _, params["time"], params["id"] = message.replace(
+                    "\x01", ""
+                ).split(" ")
                 return ParsedMessage(MessageType.CTCP_PING, **params)
             except ValueError:
                 return MessageType.UNKNOWN
@@ -126,7 +128,9 @@ class MessageParser:
 
         channel = match.group(1)
         userlist = match.group(2).split(" ")
-        return ParsedMessage(MessageType.USERS, channel_name=channel, user_list=userlist)
+        return ParsedMessage(
+            MessageType.USERS, channel_name=channel, user_list=userlist
+        )
 
     def _check_for_users_end(self, message):
         users_pattern = re.compile(
@@ -171,7 +175,7 @@ class MessageParser:
         return ParsedMessage(MessageType.END_OF_MOTD, message=message)
 
     def _check_for_quit(self, message):
-        ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net QUIT :Signed off"
+        ":user!~user@c-111-222-00-123.example.net QUIT :Signed off"
         quit_pattern = re.compile(
             r"""             # fullmask (1)
                                  ^:((.*?)        # nick (2)
@@ -192,7 +196,7 @@ class MessageParser:
         return ParsedMessage(MessageType.QUIT, nick=nick, full_mask=full_mask)
 
     def _check_for_part(self, message):
-        ":godlRmue!~Olog@lekvam.no PART #day9tv"
+        ":user!~user@example.org PART #example"
         part_pattern = re.compile(
             r"""             # fullmask (1)
                                  ^:((.*?)        # nick (2)
@@ -212,11 +216,15 @@ class MessageParser:
         nick = match.group(2)
         channel_name = match.group(5)
 
-        return ParsedMessage(MessageType.PART, nick=nick, channel_name=channel_name, full_mask=full_mask)
+        return ParsedMessage(
+            MessageType.PART,
+            nick=nick,
+            channel_name=channel_name,
+            full_mask=full_mask,
+        )
 
     def _check_for_join(self, message):
-        # message = ":Blackrobe!~Blackrobe@c-76-118-165-126.hsd1.ma.comcast.net JOIN #day9tv"
-        ":imsopure!webchat@p50803C58.dip.t-dialin.net JOIN :#joindota"
+        ":user!user@example.org JOIN :#example"
         join_pattern = re.compile(
             r"""                     # fullmask (1)
                                  ^:((.*?)                # nick (2)
@@ -236,7 +244,12 @@ class MessageParser:
         nick = match.group(2)
         channel_name = match.group(5)
 
-        return ParsedMessage(MessageType.JOIN, nick=nick, full_mask=full_mask, channel_name=channel_name)
+        return ParsedMessage(
+            MessageType.JOIN,
+            nick=nick,
+            full_mask=full_mask,
+            channel_name=channel_name,
+        )
 
     def _check_for_topic_reply(self, message):
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
@@ -259,10 +272,15 @@ class MessageParser:
         channel_name = match.group(2)
         topic = match.group(3)
 
-        return ParsedMessage(MessageType.TOPIC_REPLY, nick=nick, channel_name=channel_name, topic=topic)
+        return ParsedMessage(
+            MessageType.TOPIC_REPLY,
+            nick=nick,
+            channel_name=channel_name,
+            topic=topic,
+        )
 
     def _check_for_topic(self, message):
-        ":juke!~Jukkis@kosh.hut.fi TOPIC #testidevi2 :lol"
+        ":user!~user@example.org TOPIC #example :lol"
         topic_pattern = re.compile(
             r"""                 # fullmask (1)
                                  ^:((.*?)                # nick (2)

@@ -16,8 +16,16 @@ class TestParser(unittest.TestCase):
             "Message was not recognized as PRIVATE_MESSAGE",
         )
 
-        self.assertEqual(parsed.params["source"], "juke", "Nick was not parsed from PRIVATE_MESSAGE")
-        self.assertEqual(parsed.params["message"], "lol", "Message was not parsed from message")
+        self.assertEqual(
+            parsed.params["source"],
+            "juke",
+            "Nick was not parsed from PRIVATE_MESSAGE",
+        )
+        self.assertEqual(
+            parsed.params["message"],
+            "lol",
+            "Message was not parsed from message",
+        )
 
     def test_channel_message(self):
         channel_msg = ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf"
@@ -31,8 +39,14 @@ class TestParser(unittest.TestCase):
             "Message was not recognized as CHANNEL_MESSAGE",
         )
 
-        self.assertEqual(parsed.params["source"], "juke", "Nick was not parsed from message")
-        self.assertEqual(parsed.params["message"], "asdfadsf", "Message was not parsed from message")
+        self.assertEqual(
+            parsed.params["source"], "juke", "Nick was not parsed from message"
+        )
+        self.assertEqual(
+            parsed.params["message"],
+            "asdfadsf",
+            "Message was not parsed from message",
+        )
         self.assertEqual(
             parsed.params["channel_name"],
             "#testidevi",
@@ -45,7 +59,9 @@ class TestParser(unittest.TestCase):
         self.assertTrue(parser._check_for_ctcp(message))
 
     def test_users_message(self):
-        message = ":irc.cs.hut.fi 353 nettitutkabot @ #channelname " ":yournick @juke"
+        message = (
+            ":irc.cs.hut.fi 353 nettitutkabot @ #channelname " ":yournick @juke"
+        )
 
         parser = MessageParser()
         parsed = parser._check_for_users(message)
@@ -63,7 +79,9 @@ class TestParser(unittest.TestCase):
         )
 
     def test_users_end_message(self):
-        message = ":irc.cs.hut.fi 366 nettitutkabot @ #channelname " ":yournick @juke"
+        message = (
+            ":irc.cs.hut.fi 366 nettitutkabot @ #channelname " ":yournick @juke"
+        )
 
         parser = MessageParser()
         parsed = parser._check_for_users_end(message)

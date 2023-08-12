@@ -14,10 +14,16 @@ class IrcLinkHistory(BotScript):
 
         self.store_path = config["store_path"]
 
-        self.channels = [config["channels"]] if isinstance(config["channels"], "".__class__) else config["channels"]
+        self.channels = (
+            [config["channels"]]
+            if isinstance(config["channels"], "".__class__)
+            else config["channels"]
+        )
         self.dbs = {}
         for channel in self.channels:
-            self.dbs[channel] = shove.Shove("bsddb://" + self.store_path + "/" + channel + ".db")
+            self.dbs[channel] = shove.Shove(
+                "bsddb://" + self.store_path + "/" + channel + ".db"
+            )
 
     def _getDiffString(self, t1, t2):
         diff = t1 - t2
@@ -32,7 +38,11 @@ class IrcLinkHistory(BotScript):
             hours = diff / (60.0 * 60)
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
-            return "%d tuntia, %d minuuttia, %d sekuntia" % (hours, minutes, seconds)
+            return "%d tuntia, %d minuuttia, %d sekuntia" % (
+                hours,
+                minutes,
+                seconds,
+            )
         elif diff < 60 * 60 * 24 * 365:
             days = diff / (60.0 * 60 * 24)
             hours = (days - int(days)) * 24
@@ -50,12 +60,15 @@ class IrcLinkHistory(BotScript):
             hours = (days - int(days)) * 24
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
-            return "%d vuotta, %d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (
-                years,
-                days,
-                hours,
-                minutes,
-                seconds,
+            return (
+                "%d vuotta, %d päivää, %d tuntia, %d minuuttia, %d sekuntia"
+                % (
+                    years,
+                    days,
+                    hours,
+                    minutes,
+                    seconds,
+                )
             )
 
     def on_channel_message(self, nick, channel_name, message, full_mask):
@@ -80,4 +93,6 @@ class IrcLinkHistory(BotScript):
                     channel_name,
                     "wanha! jo " + self._getDiffString(time.time(), old_time),
                 )
-                self.say(channel_name, "< " + old_nick + "> " + old_message + "")
+                self.say(
+                    channel_name, "< " + old_nick + "> " + old_message + ""
+                )

@@ -23,11 +23,20 @@ class SVNAnnouncer(BotScript, threading.Thread):
 
     def run(self):
         while self.alive:
-            self.last_entry = self.svn_client.log(self.repository_path, limit=1)[0]
+            self.last_entry = self.svn_client.log(
+                self.repository_path, limit=1
+            )[0]
             if self.last_entry.date != self.last_entry_time:
                 self.last_entry_time = self.last_entry.date
                 rev_n = self.last_entry.revision.number
-                message = "COMMIT #" + rev_n + " by " + self.last_entry.author + ": " + self.last_entry.message
+                message = (
+                    "COMMIT #"
+                    + rev_n
+                    + " by "
+                    + self.last_entry.author
+                    + ": "
+                    + self.last_entry.message
+                )
                 for target in self.targets:
                     self.say(target, message)
 
