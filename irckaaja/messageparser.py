@@ -1,6 +1,6 @@
 import re
 from enum import IntEnum
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class MessageType(IntEnum):
@@ -42,7 +42,7 @@ class MessageParser:
         except ValueError:
             return False
 
-    def _check_for_privmsg(self, message: str) -> ParsedMessage | None:
+    def _check_for_privmsg(self, message: str) -> Optional[ParsedMessage]:
         ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
         privmsg_pattern = re.compile(
             r"""   # full host mask (1)
@@ -82,7 +82,7 @@ class MessageParser:
 
         return ParsedMessage(type_, **params)
 
-    def _parse_ctcp_message(self, params: dict[str, Any]) -> ParsedMessage:
+    def _parse_ctcp_message(self, params: Dict[str, Any]) -> ParsedMessage:
         message = params["message"]
 
         if message == "\x01VERSION\x01":
@@ -106,10 +106,10 @@ class MessageParser:
         else:
             return ParsedMessage(MessageType.UNKNOWN)
 
-    def _checkForNickInUse(self, message: str) -> ParsedMessage | None:
+    def _checkForNickInUse(self, message: str) -> Optional[ParsedMessage]:
         ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
 
-    def _check_for_users(self, message: str) -> ParsedMessage | None:
+    def _check_for_users(self, message: str) -> Optional[ParsedMessage]:
         ":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
         users_pattern = re.compile(
             r"""
@@ -133,7 +133,7 @@ class MessageParser:
             MessageType.USERS, channel_name=channel, user_list=userlist
         )
 
-    def _check_for_users_end(self, message: str) -> ParsedMessage | None:
+    def _check_for_users_end(self, message: str) -> Optional[ParsedMessage]:
         users_pattern = re.compile(
             r"""
                 ^:.*?\s           # server
@@ -153,14 +153,14 @@ class MessageParser:
 
         return ParsedMessage(MessageType.END_OF_USERS, channel_name=channel)
 
-    def _check_for_ping(self, message: str) -> ParsedMessage | None:
+    def _check_for_ping(self, message: str) -> Optional[ParsedMessage]:
         if not message.startswith("PING"):
             return None
 
         _, _, message = message.partition(" :")
         return ParsedMessage(MessageType.PING, message=message)
 
-    def _check_for_end_of_motd(self, message: str) -> ParsedMessage | None:
+    def _check_for_end_of_motd(self, message: str) -> Optional[ParsedMessage]:
         motd_pattern = re.compile(
             r"""
                 ^:         # start and :
@@ -175,7 +175,7 @@ class MessageParser:
 
         return ParsedMessage(MessageType.END_OF_MOTD, message=message)
 
-    def _check_for_quit(self, message: str) -> ParsedMessage | None:
+    def _check_for_quit(self, message: str) -> Optional[ParsedMessage]:
         ":user!~user@c-111-222-00-123.example.net QUIT :Signed off"
         quit_pattern = re.compile(
             r"""             # fullmask (1)
@@ -196,7 +196,7 @@ class MessageParser:
         full_mask = match.group(1)
         return ParsedMessage(MessageType.QUIT, nick=nick, full_mask=full_mask)
 
-    def _check_for_part(self, message: str) -> ParsedMessage | None:
+    def _check_for_part(self, message: str) -> Optional[ParsedMessage]:
         ":user!~user@example.org PART #example"
         part_pattern = re.compile(
             r"""                  # fullmask (1)
@@ -224,7 +224,7 @@ class MessageParser:
             full_mask=full_mask,
         )
 
-    def _check_for_join(self, message: str) -> ParsedMessage | None:
+    def _check_for_join(self, message: str) -> Optional[ParsedMessage]:
         ":user!user@example.org JOIN :#example"
         join_pattern = re.compile(
             r"""              # fullmask (1)
@@ -252,7 +252,7 @@ class MessageParser:
             channel_name=channel_name,
         )
 
-    def _check_for_topic_reply(self, message: str) -> ParsedMessage | None:
+    def _check_for_topic_reply(self, message: str) -> Optional[ParsedMessage]:
         ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
         topic_reply_pattern = re.compile(
             r"""
@@ -280,7 +280,7 @@ class MessageParser:
             topic=topic,
         )
 
-    def _check_for_topic(self, message: str) -> ParsedMessage | None:
+    def _check_for_topic(self, message: str) -> Optional[ParsedMessage]:
         ":user!~user@example.org TOPIC #example :lol"
         topic_pattern = re.compile(
             r"""                 # fullmask (1)
@@ -310,7 +310,7 @@ class MessageParser:
             topic=topic,
         )
 
-    def _parse_message(self, message: str) -> ParsedMessage | None:
+    def _parse_message(self, message: str) -> Optional[ParsedMessage]:
         """
         Tries to figure out what the message is.
         """
@@ -334,7 +334,7 @@ class MessageParser:
 
         return ParsedMessage(MessageType.UNKNOWN, message=message)
 
-    def parse_buffer(self, buff: str) -> tuple[list[ParsedMessage], str]:
+    def parse_buffer(self, buff: str) -> Tuple[List[ParsedMessage], str]:
         """
         Parses buffer to ParsedMessages.
         Returns list of ParsedMessages and remainder of buff.

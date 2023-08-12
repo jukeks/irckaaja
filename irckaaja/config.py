@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List
 
 from configobj import ConfigObj
 
@@ -16,27 +16,27 @@ class Config:
             self.filename, list_values=True, encoding="utf-8"
         )
 
-    def servers(self) -> dict[str, Any]:
+    def servers(self) -> Dict[str, Any]:
         """
         Returns servers as a dictionary.
         """
         return self.config["servers"]
 
-    def modules(self) -> dict[str, Any]:
+    def modules(self) -> Dict[str, Any]:
         """
         Returns a dictionary of  modules defined in the
         conf to be loaded.
         """
         return self.config["modules"]
 
-    def channels(self, servername: str) -> list[str]:
+    def channels(self, servername: str) -> List[str]:
         """
         Returns a list of channels to be joined
         on a network (server).
         """
         return self.config["servers"][servername].get("channels", [])
 
-    def bot(self) -> dict[str, Any]:
+    def bot(self) -> Dict[str, Any]:
         """
         Returns bot dictionary.
         """

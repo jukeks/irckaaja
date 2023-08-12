@@ -1,15 +1,18 @@
+from typing import List
+
+
 class IrcChannel:
     """
     Channel datastructure. Keeps track of users.
     """
 
-    def __init__(self, name: str, userlist: list[str]) -> None:
+    def __init__(self, name: str, userlist: List[str]) -> None:
         self.name = name
         self.userlist = userlist
         self.userlist_complete = True
         self.topic = ""
 
-    def users_message(self, userlist: list[str]) -> None:
+    def users_message(self, userlist: List[str]) -> None:
         """
         Usually received on join. Count of these
         messages depend on user count on the channel.

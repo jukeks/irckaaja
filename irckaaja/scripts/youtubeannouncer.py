@@ -1,7 +1,7 @@
 __author__ = "juke"
 import re
 import urllib
-from typing import Any
+from typing import Any, List
 from xml.dom import minidom
 
 from irckaaja.botscript import BotScript
@@ -22,7 +22,7 @@ class YoutubeAnnouncer(BotScript):
                     self.say(target, "** " + title + " **")
 
     @staticmethod
-    def _parse_ids(message: str) -> list[str]:
+    def _parse_ids(message: str) -> List[str]:
         urls = BotScript.parse_urls(message)
         if not urls:
             return []

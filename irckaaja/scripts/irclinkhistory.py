@@ -1,5 +1,5 @@
 import time
-from typing import Any
+from typing import Any, Dict
 
 import shove
 
@@ -9,7 +9,7 @@ from irckaaja.serverconnection import ServerConnection
 
 class IrcLinkHistory(BotScript):
     def __init__(
-        self, server_connection: ServerConnection, config: dict[str, Any]
+        self, server_connection: ServerConnection, config: Dict[str, Any]
     ) -> None:
         BotScript.__init__(self, server_connection, config)
 

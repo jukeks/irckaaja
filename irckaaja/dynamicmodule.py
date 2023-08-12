@@ -1,5 +1,5 @@
 import importlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from irckaaja.botscript import BotScript
 
@@ -16,7 +16,7 @@ class DynamicModule:
         self,
         server_connection: "ServerConnection",
         module_name: str,
-        config: dict[str, Any] | None = None,
+        config: Optional[Dict[str, Any]] = None,
     ) -> None:
         """
         Initialises and tries to load a class in a module in the scripts folder.

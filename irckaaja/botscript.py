@@ -1,6 +1,6 @@
 import re
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
     from irckaaja.serverconnection import ServerConnection
@@ -13,7 +13,7 @@ class BotScript:
     """
 
     def __init__(
-        self, server_connection: "ServerConnection", config: dict[str, Any]
+        self, server_connection: "ServerConnection", config: Dict[str, Any]
     ) -> None:
         self.server_connection = server_connection
         self.config = config
@@ -83,5 +83,5 @@ class BotScript:
         """
 
     @staticmethod
-    def parse_urls(string: str) -> list[Any]:
+    def parse_urls(string: str) -> List[Any]:
         return re.findall(r"(https?://\S+)", string)

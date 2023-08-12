@@ -6,7 +6,7 @@ class ModuleLoader(BotScript):
     """
     A helper script for loading, reloading and unloading
     modules dynamically on runtime. Makes developing scripts
-    much easier as the bot need to reconnect to irc network
+    much easier as the bot doesn'tt need to reconnect to irc network
     between changes.
     """
 

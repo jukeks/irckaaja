@@ -1,7 +1,7 @@
 import socket
 import time
 from threading import Thread
-from typing import Any
+from typing import Any, Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
 from irckaaja.dynamicmodule import DynamicModule
@@ -18,10 +18,10 @@ class ServerConnection:
     def __init__(
         self,
         networkname: str,
-        server_config: dict[str, Any],
-        bot_config: dict[str, Any],
-        joinlist: list[str],
-        modules_config: dict[str, Any],
+        server_config: Dict[str, Any],
+        bot_config: Dict[str, Any],
+        joinlist: List[str],
+        modules_config: Dict[str, Any],
     ) -> None:
         self.alive = True
         self.connected = False
@@ -41,10 +41,10 @@ class ServerConnection:
         self._init_callback_table()
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self._channel_list: list[IrcChannel] = []
+        self._channel_list: List[IrcChannel] = []
 
         self.modules_config = modules_config
-        self.dynamic_modules: list[DynamicModule] = [
+        self.dynamic_modules: List[DynamicModule] = [
             DynamicModule(self, m, c) for m, c in modules_config.items()
         ]
 
@@ -158,7 +158,7 @@ class ServerConnection:
         self._print_line("Connection closed.")
         self.connected = False
 
-    def _handle_messages(self, messages: list[ParsedMessage]) -> None:
+    def _handle_messages(self, messages: List[ParsedMessage]) -> None:
         """
         Handles a list of messages
         """
@@ -310,7 +310,7 @@ class ServerConnection:
             self.connected = True
             self._on_connect()
 
-    def _find_channel_by_name(self, channel_name: str) -> IrcChannel | None:
+    def _find_channel_by_name(self, channel_name: str) -> Optional[IrcChannel]:
         """
         Returns a channel instance from channel_list
         matching channel_name parameter or None.
@@ -320,7 +320,7 @@ class ServerConnection:
                 return channel
         return None
 
-    def _add_channel(self, name: str, user_list: list[str]) -> None:
+    def _add_channel(self, name: str, user_list: List[str]) -> None:
         """
         Adds a channel to networks channel list.
         """
