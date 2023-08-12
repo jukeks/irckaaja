@@ -1,9 +1,7 @@
 import importlib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from irckaaja.botscript import BotScript
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from irckaaja.serverconnection import ServerConnection

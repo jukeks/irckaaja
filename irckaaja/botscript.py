@@ -1,11 +1,10 @@
 import re
 import time
-from typing import Any
-
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from irckaaja.serverconnection import ServerConnection
+
 
 class BotScript:
     """

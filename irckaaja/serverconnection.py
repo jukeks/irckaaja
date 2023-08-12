@@ -44,9 +44,9 @@ class ServerConnection:
         self._channel_list: list[IrcChannel] = []
 
         self.modules_config = modules_config
-        self.dynamic_modules: list[
-            DynamicModule
-        ] = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules: list[DynamicModule] = [
+            DynamicModule(self, m, c) for m, c in modules_config.items()
+        ]
 
         self._last_ping = time.time()
 
