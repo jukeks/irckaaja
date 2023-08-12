@@ -6,7 +6,7 @@ setup(
     author="juke",
     author_email="virtanen@jukk.is",
     packages=["irckaaja", "irckaaja.scripts"],
-    url="https://github.com/jukeks/IrkkaaNorttienKanssa",
+    url="https://github.com/jukeks/irckaaja",
     license="LICENSE.txt",
     description="Event based IRC bot.",
     install_requires=[

@@ -1,8 +1,7 @@
 __author__ = "juke"
 import re
+import urllib
 from xml.dom import minidom
-
-import urllib2
 
 from irckaaja.botscript import BotScript
 
@@ -43,7 +42,7 @@ class YoutubeAnnouncer(BotScript):
 
     @staticmethod
     def _query_title(id):
-        xml = urllib2.urlopen(APIURL + id).read()
+        xml = urllib.urlopen(APIURL + id).read()
         return (
             minidom.parseString(xml)
             .getElementsByTagName("title")[0]

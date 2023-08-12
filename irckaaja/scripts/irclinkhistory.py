@@ -1,6 +1,3 @@
-__author__ = "juke"
-
-
 import time
 
 import shove
@@ -25,7 +22,7 @@ class IrcLinkHistory(BotScript):
                 "bsddb://" + self.store_path + "/" + channel + ".db"
             )
 
-    def _getDiffString(self, t1, t2):
+    def _get_diff_string(self, t1, t2):
         diff = t1 - t2
 
         if diff < 60:
@@ -91,7 +88,7 @@ class IrcLinkHistory(BotScript):
                 old_time, old_nick, old_message = history_tuple
                 self.say(
                     channel_name,
-                    "wanha! jo " + self._getDiffString(time.time(), old_time),
+                    "wanha! jo " + self._get_diff_string(time.time(), old_time),
                 )
                 self.say(
                     channel_name, "< " + old_nick + "> " + old_message + ""
