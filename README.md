@@ -56,4 +56,3 @@ Drop a pull request if you have something you'd want to incorporate.
 ## License
 
 See [Licence.txt](LICENCE.txt).
-
