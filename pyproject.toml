@@ -25,6 +25,7 @@ mypy = "*"
 pyupgrade = "*"
 setuptools = "*"
 pytest = "*"
+build = "*"
 
 [tool.black]
 line-length = 80
