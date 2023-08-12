@@ -1,8 +1,8 @@
-__author__ = 'juke'
-# -*- coding: utf-8 -*-
+__author__ = "juke"
 import re
-import urllib2
 from xml.dom import minidom
+
+import urllib2
 
 from irckaaja.botscript import BotScript
 
@@ -26,11 +26,16 @@ class YoutubeAnnouncer(BotScript):
             return
         ids = []
         for url in urls:
-            match = re.match(re.compile(r'''https?://
+            match = re.match(
+                re.compile(
+                    r"""https?://
                         (youtu\.be/|www\.youtube\.com/watch\?v=)
                         (\S*?)($|\?\S*$)
-                         ''', re.X),
-                        url)
+                         """,
+                    re.X,
+                ),
+                url,
+            )
 
             if match:
                 ids.append(match.group(2))
@@ -39,5 +44,9 @@ class YoutubeAnnouncer(BotScript):
     @staticmethod
     def _query_title(id):
         xml = urllib2.urlopen(APIURL + id).read()
-        return minidom.parseString(xml).getElementsByTagName('title')[0].childNodes[0].nodeValue
-
+        return (
+            minidom.parseString(xml)
+            .getElementsByTagName("title")[0]
+            .childNodes[0]
+            .nodeValue
+        )

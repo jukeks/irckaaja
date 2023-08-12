@@ -1,7 +1,9 @@
-import re
-import httplib
-from irckaaja.botscript import BotScript
 import json
+import re
+
+import httplib
+
+from irckaaja.botscript import BotScript
 
 CLIENT_ID = '75c435ce216d1f2'
 
@@ -52,7 +54,7 @@ class ImgurAnnouncer(BotScript):
             resp = resp.read()
             resp = json.loads(resp)
             h.close()
-            
+
             return resp['data']['title']
         except:
             return None

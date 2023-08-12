@@ -12,6 +12,12 @@ configobj = "*"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "*"
+black = "*"
+flake8 = "*"
+isort = "*"
+autoflake = "*"
+mypy = "*"
+pyupgrade = "*"
 
 [build-system]
 requires = ["poetry-core"]

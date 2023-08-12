@@ -1,7 +1,4 @@
-import sys
-
-
-class DynamicModule(object):
+class DynamicModule:
     """
     This class holds Python scripts.
     """
@@ -32,13 +29,17 @@ class DynamicModule(object):
         self.classvar = getattr(self.module, self.module_name)
         self.instance = self.classvar(self.server_connection, self.module_config)
 
-
     def load(self):
         """
         Tries to load a class in a module in the scripts folder.
         Module should be named <ClassName>.lower().
         """
-        self.module = __import__('scripts.' + self.module_name.lower(), globals(),
-                                 locals(), [self.module_name], -1)
+        self.module = __import__(
+            "scripts." + self.module_name.lower(),
+            globals(),
+            locals(),
+            [self.module_name],
+            -1,
+        )
         self.classvar = getattr(self.module, self.module_name)
         self.instance = self.classvar(self.server_connection, self.module_config)

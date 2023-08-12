@@ -40,12 +40,15 @@ class ModuleLoader(BotScript):
                 return True
 
         # Loading and appending to the list
-        dm = DynamicModule(self.server_connection, module_name, self.server_connection.modules_config[module_name])
+        dm = DynamicModule(
+            self.server_connection,
+            module_name,
+            self.server_connection.modules_config[module_name],
+        )
         self.server_connection.dynamic_modules.append(dm)
 
         self.say(source, "loaded " + str(dm.classvar))
         return True
-
 
     def _try_reload(self, source, message):
         if not message.startswith("!reload"):
@@ -61,7 +64,6 @@ class ModuleLoader(BotScript):
             dm.reload_module()
             self.say(source, "reloaded " + str(dm.classvar))
             return True
-
 
         # didn't find it
         self.say(source, "unable to find module with name " + module_name)
@@ -87,4 +89,3 @@ class ModuleLoader(BotScript):
         # module was not found
         self.say(source, "unable to find module with name " + module_name)
         return True
-

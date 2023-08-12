@@ -1,25 +1,29 @@
-__author__ = 'juke'
-# -*- coding: utf-8 -*-
+__author__ = "juke"
 
+
+import time
+
+import shove
 
 from irckaaja.botscript import BotScript
-import shove
-import re
-import time
-import urlparse
 
 
 class IrcLinkHistory(BotScript):
     def __init__(self, server_connection, config):
         BotScript.__init__(self, server_connection, config)
 
-        self.store_path = config['store_path']
+        self.store_path = config["store_path"]
 
-        self.channels = [config['channels']] if isinstance(config['channels'], "".__class__) else config['channels']
+        self.channels = (
+            [config["channels"]]
+            if isinstance(config["channels"], "".__class__)
+            else config["channels"]
+        )
         self.dbs = {}
         for channel in self.channels:
-            self.dbs[channel] = shove.Shove("bsddb://" + self.store_path + "/" + channel + ".db")
-
+            self.dbs[channel] = shove.Shove(
+                "bsddb://" + self.store_path + "/" + channel + ".db"
+            )
 
     def _getDiffString(self, t1, t2):
         diff = t1 - t2
@@ -40,14 +44,25 @@ class IrcLinkHistory(BotScript):
             hours = (days - int(days)) * 24
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
-            return "%d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (days, hours, minutes, seconds)
+            return "%d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (
+                days,
+                hours,
+                minutes,
+                seconds,
+            )
         else:
             years = diff / (60.0 * 60 * 24 * 365)
             days = (years - int(years)) * 365
             hours = (days - int(days)) * 24
             minutes = (hours - int(hours)) * 60
             seconds = (minutes - int(minutes)) * 60
-            return "%d vuotta, %d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (years, days, hours, minutes, seconds)
+            return "%d vuotta, %d päivää, %d tuntia, %d minuuttia, %d sekuntia" % (
+                years,
+                days,
+                hours,
+                minutes,
+                seconds,
+            )
 
     def on_channel_message(self, nick, channel_name, message, full_mask):
         urls = self.parse_urls(message)
@@ -67,5 +82,8 @@ class IrcLinkHistory(BotScript):
                 db.sync()
             else:
                 old_time, old_nick, old_message = history_tuple
-                self.say(channel_name, "wanha! jo " + self._getDiffString(time.time(), old_time))
-                self.say(channel_name, '< ' + old_nick + '> ' + old_message + '')
+                self.say(
+                    channel_name,
+                    "wanha! jo " + self._getDiffString(time.time(), old_time),
+                )
+                self.say(channel_name, "< " + old_nick + "> " + old_message + "")

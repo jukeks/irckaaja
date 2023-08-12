@@ -1,4 +1,4 @@
-class IrcChannel(object):
+class IrcChannel:
     """
     Channel datastructure. Keeps track of users.
     """

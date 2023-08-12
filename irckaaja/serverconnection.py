@@ -1,9 +1,9 @@
 import socket
 import time
 from threading import Thread
-from messageparser import MessageParser, ParsedMessage, MessageType
+
 from channel import IrcChannel
-from dynamicmodule import DynamicModule
+from messageparser import MessageParser, MessageType
 
 # Protocol source: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
 
@@ -12,18 +12,21 @@ class ServerConnection:
     """
     Class handling irc servers.
     """
+
     PING_INTERVAL_THRESHOLD = 300  # 300 seconds
 
-    def __init__(self, networkname, server_config, bot_config, joinlist, modules_config):
+    def __init__(
+        self, networkname, server_config, bot_config, joinlist, modules_config
+    ):
         self.alive = True
         self.connected = False
-        self.hostname = server_config['hostname']
-        self.port = int(server_config.get('port', "6667"))
-        self.nick = bot_config['nick']
-        self.altnick = bot_config.get('altnick', self.nick + "_")
-        self.username = bot_config['username']
-        self.realname = bot_config['realname']
-        self.owner = bot_config['owner']
+        self.hostname = server_config["hostname"]
+        self.port = int(server_config.get("port", "6667"))
+        self.nick = bot_config["nick"]
+        self.altnick = bot_config.get("altnick", self.nick + "_")
+        self.username = bot_config["username"]
+        self.realname = bot_config["realname"]
+        self.owner = bot_config["owner"]
         self.networkname = networkname
 
         self.joinlist = joinlist
@@ -36,7 +39,9 @@ class ServerConnection:
         self._channel_list = []
 
         self._modules_config = modules_config
-        self.dynamic_modules = [] #[DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules = (
+            []
+        )  # [DynamicModule(self, m, c) for m, c in modules_config.items()]
 
         self._last_ping = time.time()
 
@@ -49,7 +54,7 @@ class ServerConnection:
             MessageType.QUIT: self._quit_received,
             MessageType.TOPIC: self._topic_received,
             MessageType.END_OF_MOTD: self._motd_received,
-            #MessageType.NICK_IN_USE: self.ni,
+            # MessageType.NICK_IN_USE: self.ni,
             MessageType.TOPIC_REPLY: self._topic_reply_received,
             MessageType.USERS: self._users_received,
             MessageType.END_OF_USERS: self._users_end_received,
@@ -105,7 +110,7 @@ class ServerConnection:
         Prints and writes message to server.
         """
         self._print_line(message[:-1])
-        self._socket.send(bytearray(message, 'utf-8'))
+        self._socket.send(bytearray(message, "utf-8"))
 
     def _check_ping_time(self):
         return time.time() - self._last_ping < ServerConnection.PING_INTERVAL_THRESHOLD
@@ -121,7 +126,7 @@ class ServerConnection:
                 tmp = self._socket.recv(4096)
             except socket.timeout as e:
                 continue
-            except socket.error as e:
+            except OSError as e:
                 self._print_line(str(e))
                 break
             except KeyboardInterrupt:
@@ -134,7 +139,7 @@ class ServerConnection:
             if not tmp:
                 break
 
-            tmp = tmp.decode('utf-8')
+            tmp = tmp.decode("utf-8")
 
             buff += tmp
             parsed_messages, remainder = self._parser.parse_buffer(buff)
@@ -242,9 +247,9 @@ class ServerConnection:
         Called when a private message has been received. Prints it
         and calls on_private_message() on DynamicModule instances.
         """
-        source = kw['source']
-        message = kw['message']
-        full_mask = kw['full_mask']
+        source = kw["source"]
+        message = kw["message"]
+        full_mask = kw["full_mask"]
         self._print_line("PRIVATE" + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
@@ -259,10 +264,10 @@ class ServerConnection:
         and calls on_channel_message() on DynamicModule instances.
         """
 
-        source = kw['source']
-        message = kw['message']
-        full_mask = kw['full_mask']
-        channel = kw['channel_name']
+        source = kw["source"]
+        message = kw["message"]
+        full_mask = kw["full_mask"]
+        channel = kw["channel_name"]
 
         self._print_line(channel + " <" + source + "> " + message)
 
@@ -278,7 +283,7 @@ class ServerConnection:
         """
 
         self._last_ping = time.time()
-        message = kw['message']
+        message = kw["message"]
         self.PONG(message)
 
     def _motd_received(self, **kw):
@@ -286,7 +291,7 @@ class ServerConnection:
         Called when the end of MOTD message
         has been received.
         """
-        message = kw['message']
+        message = kw["message"]
 
         self._print_line(message)
         if not self.connected:
@@ -318,8 +323,8 @@ class ServerConnection:
         channel instance of the users.
         """
 
-        channel_name = kw['channel_name']
-        user_list = kw['user_list']
+        channel_name = kw["channel_name"]
+        user_list = kw["user_list"]
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -334,7 +339,7 @@ class ServerConnection:
         Notifies the channel instance.
         """
 
-        channel_name = kw['channel_name']
+        channel_name = kw["channel_name"]
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -352,8 +357,8 @@ class ServerConnection:
         on_quit() on DynamicModules
         """
 
-        nick = kw['nick']
-        full_mask = kw['full_mask']
+        nick = kw["nick"]
+        full_mask = kw["full_mask"]
 
         for channel in self._channel_list:
             channel.remove_user(nick)
@@ -372,9 +377,9 @@ class ServerConnection:
         on_part() on DynamicModules
         """
 
-        nick = kw['nick']
-        channel_name = kw['channel_name']
-        full_mask = kw['full_mask']
+        nick = kw["nick"]
+        channel_name = kw["channel_name"]
+        full_mask = kw["full_mask"]
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -396,9 +401,9 @@ class ServerConnection:
         on_join() on DynamicModules
         """
 
-        nick = kw['nick']
-        channel_name = kw['channel_name']
-        full_mask = kw['full_mask']
+        nick = kw["nick"]
+        channel_name = kw["channel_name"]
+        full_mask = kw["full_mask"]
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -417,16 +422,18 @@ class ServerConnection:
         on DynamicModules
         """
 
-        nick = kw['nick']
-        channel_name = kw['channel_name']
-        full_mask = kw['full_mask']
-        topic = kw['topic']
+        nick = kw["nick"]
+        channel_name = kw["channel_name"]
+        full_mask = kw["full_mask"]
+        topic = kw["topic"]
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
             channel.topic = topic
 
-        self._print_line(nick + " changed the topic of " + channel_name + " to: " + topic)
+        self._print_line(
+            nick + " changed the topic of " + channel_name + " to: " + topic
+        )
         for dm in self.dynamic_modules:
             try:
                 dm.instance.on_topic(nick, channel_name, topic, full_mask)
@@ -439,8 +446,8 @@ class ServerConnection:
         of the topic on joined channel.
         """
 
-        channel_name = kw['channel_name']
-        topic = kw['topic']
+        channel_name = kw["channel_name"]
+        topic = kw["topic"]
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -453,10 +460,10 @@ class ServerConnection:
 
     def _ctcp_version_received(self, **kw):
         ":juke!juke@jukk.is NOTICE irckaaja :VERSION ?l? hakkeroi!"
-        self.NOTICE(kw['source'], "\x01VERSION irckaaja 0.1.0\x01")
+        self.NOTICE(kw["source"], "\x01VERSION irckaaja 0.1.0\x01")
 
     def _unknown_message_received(self, **kw):
-        self._print_line(kw['message'])
+        self._print_line(kw["message"])
 
     def _sleep(self, seconds):
         """
