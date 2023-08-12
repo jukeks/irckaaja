@@ -5,10 +5,10 @@ from messageparser import MessageParser, ParsedMessage, MessageType
 from channel import IrcChannel
 from dynamicmodule import DynamicModule
 
-# Source: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
+# Protocol source: http://blog.initprogram.com/2010/10/14/a-quick-basic-primer-on-the-irc-protocol/
 
 
-class ServerConnection(object):
+class ServerConnection:
     """
     Class handling irc servers.
     """
@@ -36,7 +36,7 @@ class ServerConnection(object):
         self._channel_list = []
 
         self._modules_config = modules_config
-        self.dynamic_modules = [DynamicModule(self, m, c) for m, c in modules_config.items()]
+        self.dynamic_modules = [] #[DynamicModule(self, m, c) for m, c in modules_config.items()]
 
         self._last_ping = time.time()
 

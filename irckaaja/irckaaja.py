@@ -4,7 +4,7 @@ from optparse import OptionParser
 from time import sleep
 
 
-def getOptions():
+def get_options():
     parser = OptionParser()
     parser.add_option("-c", "--configfile", dest="configfile",
                       help="Reads FILE as a configfile", metavar="FILE", default="config.ini")
@@ -14,7 +14,7 @@ def getOptions():
 
 
 def main():
-    options = getOptions()
+    options = get_options()
     conf = Config(options.configfile)
     modulesd = conf.modules()
     bot_info = conf.bot()
