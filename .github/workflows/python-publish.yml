@@ -3,6 +3,8 @@ name: Publish Python Package
 on:
   release:
     types: [published]
+    environments:
+      - name: PyPI
 
 permissions:
   contents: read
