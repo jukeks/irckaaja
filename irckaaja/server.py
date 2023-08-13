@@ -4,7 +4,7 @@ from threading import Thread
 from typing import Any, Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
-from irckaaja.config import ServerConfig
+from irckaaja.config import BotConfig, ServerConfig
 from irckaaja.dynamicmodule import DynamicModule
 from irckaaja.protocol import (
     ChannelMessage,
@@ -36,18 +36,14 @@ class ServerConnection:
         self,
         networkname: str,
         server_config: ServerConfig,
-        bot_config: Dict[str, Any],
+        bot_config: BotConfig,
         joinlist: List[str],
         modules_config: Dict[str, Any],
     ) -> None:
         self.alive = True
         self.connected = False
         self.server_config = server_config
-        self.nick = bot_config["nick"]
-        self.altnick = bot_config.get("altnick", self.nick + "_")
-        self.username = bot_config["username"]
-        self.realname = bot_config["realname"]
-        self.owner = bot_config["owner"]
+        self.bot_config = bot_config
         self.networkname = networkname
 
         self.joinlist = joinlist
@@ -135,8 +131,10 @@ class ServerConnection:
                     (self.server_config.hostname, self.server_config.port)
                 )
 
-                self.set_nick(self.nick)
-                self.set_user(self.username, self.realname)
+                self.set_nick(self.bot_config.nick)
+                self.set_user(
+                    self.bot_config.username, self.bot_config.realname
+                )
 
                 self._last_ping = time.time()
                 break

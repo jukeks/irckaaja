@@ -14,6 +14,15 @@ class ServerConfig:
     channels: list[str]
 
 
+@dataclass
+class BotConfig:
+    nick: str
+    altnick: str
+    realname: str
+    username: str
+    owner: str
+
+
 class Config:
     """
     Wrapper for config.ini
@@ -59,8 +68,15 @@ class Config:
         """
         return self.config["servers"][servername].get("channels", [])
 
-    def bot(self) -> Dict[str, Any]:
+    def bot(self) -> BotConfig:
         """
         Returns bot dictionary.
         """
-        return self.config["bot"]
+        config = self.config["bot"]
+        return BotConfig(
+            nick=config["nick"],
+            altnick=config["altnick"],
+            realname=config["realname"],
+            username=config["username"],
+            owner=config["owner"],
+        )

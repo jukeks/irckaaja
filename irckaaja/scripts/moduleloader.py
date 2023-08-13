@@ -14,7 +14,7 @@ class ModuleLoader(BotScript):
         self, source: str, message: str, full_mask: str
     ) -> None:
         # authenticating
-        if full_mask != self.server_connection.owner:
+        if full_mask != self.server_connection.bot_config.owner:
             return
 
         # checking if we got a relevant message
