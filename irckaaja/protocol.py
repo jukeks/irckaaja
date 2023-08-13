@@ -245,12 +245,12 @@ class MessageParser:
         ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
 
     def _check_for_users(self, message: str) -> Optional[ParsedMessage]:
-        ":irc.cs.hut.fi 353 nettitutkabot @ #channlename :yournick @juke"
+        ":irc.cs.hut.fi 353 nettitutkabot @ #channelname :yournick @juke"
         users_pattern = re.compile(
             r"""
                 ^:.*?\s            # server
                 353\s              # users code
-                .*?\s              # hostname
+                .*?\s              # nick
                 [=|\@]\s
                 ([\#|\!].*?)\s     # channel (1)
                 :(.*)              # users (2)
@@ -274,7 +274,7 @@ class MessageParser:
             r"""
                 ^:.*?\s           # server
                 366\s             # users end code
-                .*?\s             # hostname
+                .*?\s             # nick
                 ([\#|\!].*?)\s    # channel (1)
                 :(.*)             # message (2)
                 """,

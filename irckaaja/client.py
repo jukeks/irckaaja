@@ -280,7 +280,7 @@ class IrcClient:
 
     def _join_channels(self) -> None:
         """
-        Joins channels specified in self.joinlist
+        Joins channels specified in server_config.
         """
         for channel in self.server_config.channels:
             self.join_channel(channel)
