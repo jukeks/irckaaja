@@ -13,6 +13,9 @@ A scriptable IRC bot with a Python interface.
 
 ## Installation
 
+irckaaja requires Python 3.9 or newer. The package is available on [PyPI](https://pypi.org/project/irckaaja/) 
+and can be installed with pip
+
 ```bash
 pip install irckaaja
 ```
@@ -93,7 +96,7 @@ should be placed to `irckaaja.scripts.greeter.Greeter`.
 Loading of modules is controlled by the `[modules]` section of the configuration
  file:
 
-```init
+```ini
 [modules]
     [[Greeter]]
         arbitrary_configuration = "passed to script as a dict[str, Any]"
