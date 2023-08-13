@@ -30,8 +30,8 @@ class BotScript:
         """
         Sleeps for seconds unless not self.alive.
         """
-        start = time.time()
-        while time.time() < start + seconds and self.alive:
+        start = time.monotonic()
+        while time.monotonic() < start + seconds and self.alive:
             time.sleep(1)
 
     def kill(self) -> None:

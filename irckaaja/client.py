@@ -56,7 +56,7 @@ class IrcClient:
             for script_config in modules_config.values()
         ]
 
-        self._last_ping = time.time()
+        self._last_ping = time.monotonic()
 
     def _route_message(self, parsed: ParsedMessage) -> None:
         type = parsed.type
@@ -133,7 +133,7 @@ class IrcClient:
                     self.bot_config.username, self.bot_config.realname
                 )
 
-                self._last_ping = time.time()
+                self._last_ping = time.monotonic()
                 break
 
             except Exception as e:
@@ -160,7 +160,10 @@ class IrcClient:
         self._socket.sendall(bytearray(message, "utf-8"))
 
     def _check_ping_time(self) -> bool:
-        return time.time() - self._last_ping < IrcClient.PING_INTERVAL_THRESHOLD
+        return (
+            time.monotonic() - self._last_ping
+            < IrcClient.PING_INTERVAL_THRESHOLD
+        )
 
     def _read(self) -> None:
         """
@@ -331,7 +334,7 @@ class IrcClient:
         Called when PING message has been received.
         """
 
-        self._last_ping = time.time()
+        self._last_ping = time.monotonic()
         message = msg.message
         self.send_pong(message)
 
@@ -518,6 +521,6 @@ class IrcClient:
         """
         Sleeps for seconds unless not self.alive.
         """
-        start = time.time()
-        while time.time() < start + seconds and self.alive:
+        start = time.monotonic()
+        while time.monotonic() < start + seconds and self.alive:
             time.sleep(1)
