@@ -13,7 +13,7 @@ A scriptable IRC bot with a Python interface.
 
 ## Installation
 
-irckaaja requires Python 3.9 or newer. The package is available on [PyPI](https://pypi.org/project/irckaaja/) 
+irckaaja requires Python 3.9 or newer. The package is available on [PyPI](https://pypi.org/project/irckaaja/)
 and can be installed with pip
 
 ```bash
@@ -28,7 +28,7 @@ python -m irckaaja.irckaaja -c config.ini
 ## Scripts
 
 To build your own scripts, subclass `irckaaja.botscript.BotScript`. Currently
-subscritable events are
+subscribable events are
 
 ```python
     def on_channel_message(
