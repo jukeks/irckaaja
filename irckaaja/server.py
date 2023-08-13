@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
 from irckaaja.dynamicmodule import DynamicModule
-from irckaaja.messageparser import (
+from irckaaja.protocol import (
     ChannelMessage,
     CTCPVersionMessage,
     EndOfMotdMessage,
@@ -117,7 +117,7 @@ class ServerConnection:
 
     def connect(self) -> None:
         """
-        Tries to connect to irc server.
+        Non-blocking method that initiates connection.
         """
         self._reader_thread = Thread(target=self._connection_loop)
         self._reader_thread.start()
@@ -160,7 +160,7 @@ class ServerConnection:
         Prints and writes message to server.
         """
         self._print_line(message[:-1])
-        self._socket.send(bytearray(message, "utf-8"))
+        self._socket.sendall(bytearray(message, "utf-8"))
 
     def _check_ping_time(self) -> bool:
         return (
@@ -190,6 +190,7 @@ class ServerConnection:
                 break
 
             if not read:
+                # EOF
                 break
 
             buff += read.decode("utf-8")

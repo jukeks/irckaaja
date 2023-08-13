@@ -1,6 +1,6 @@
 import unittest
 
-from irckaaja.messageparser import MessageParser, MessageType
+from irckaaja.protocol import MessageParser, MessageType
 
 
 class TestParser(unittest.TestCase):

@@ -4,7 +4,7 @@ from typing import Any, Dict
 import shove
 
 from irckaaja.botscript import BotScript
-from irckaaja.serverconnection import ServerConnection
+from irckaaja.server import ServerConnection
 
 
 class IrcLinkHistory(BotScript):

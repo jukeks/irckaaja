@@ -149,8 +149,7 @@ class ParsedMessage:
 
 class MessageParser:
     """
-    Class handles irc messages and notifies server_connection
-    about them.
+    Parses IRC protocol messages.
     """
 
     def _check_for_ctcp(self, message: str) -> bool:

@@ -1,8 +1,17 @@
+from dataclasses import dataclass
 from typing import Any, Dict, List
 
 from configobj import ConfigObj
 
 CONFIG_FILENAME = "config.ini"
+
+
+@dataclass
+class ServerConfig:
+    name: str
+    hostname: str
+    port: str
+    channels: list[str]
 
 
 class Config:

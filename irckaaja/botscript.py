@@ -3,7 +3,7 @@ import time
 from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
-    from irckaaja.serverconnection import ServerConnection
+    from irckaaja.server import ServerConnection
 
 
 class BotScript:
@@ -39,8 +39,8 @@ class BotScript:
     def kill(self) -> None:
         self.alive = False
 
-    # Methods below can be implemented in your script class .
-    # That way you can subscribe to those messages.
+    # Implement methods below to subscribe to the events.
+
     def on_channel_message(
         self, nick: str, target: str, message: str, full_mask: str
     ) -> None:

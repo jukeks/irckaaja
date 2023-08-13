@@ -2,7 +2,7 @@ from optparse import OptionParser, Values
 from time import sleep
 
 from irckaaja.config import Config
-from irckaaja.serverconnection import ServerConnection
+from irckaaja.server import ServerConnection
 
 
 def get_options() -> Values:

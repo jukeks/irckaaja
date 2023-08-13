@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from irckaaja.botscript import BotScript
 
 if TYPE_CHECKING:
-    from irckaaja.serverconnection import ServerConnection
+    from irckaaja.server import ServerConnection
 
 
 class DynamicModule:
     """
-    This class holds Python scripts.
+    Container for reloadable scripts.
     """
 
     def __init__(
