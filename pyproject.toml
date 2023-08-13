@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "irckaaja"
-version = "0.1.1"
+version = "0.2.0"
 description = ""
 authors = ["Jukka-Pekka Virtanen <virtanen@jukk.is>"]
 readme = "README.md"
@@ -8,7 +8,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 configobj = "*"
-shove = "*"
 
 [tool.mypy]
 python_version = "3.9"
