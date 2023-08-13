@@ -2,6 +2,8 @@ import re
 import time
 from typing import TYPE_CHECKING, Any, Dict, List
 
+from irckaaja.protocol import User
+
 if TYPE_CHECKING:
     from irckaaja.client import IrcClient
 
@@ -37,33 +39,31 @@ class BotScript:
     def kill(self) -> None:
         self.alive = False
 
-    # Implement methods below to subscribe to the events.
+    # Implement methods below in the subclass to subscribe to events.
 
     def on_channel_message(
-        self, nick: str, target: str, message: str, full_mask: str
+        self, user: User, channel_name: str, message: str
     ) -> None:
         """
         Called when a channel message is received.
         """
 
-    def on_private_message(
-        self, nick: str, message: str, full_mask: str
-    ) -> None:
+    def on_private_message(self, user: User, message: str) -> None:
         """
         Called when a private message is received.
         """
 
-    def on_join(self, nick: str, channel_name: str, full_mask: str) -> None:
+    def on_join(self, user: User, channel_name: str) -> None:
         """
         Called when a user joins a channel.
         """
 
-    def on_part(self, nick: str, channel_name: str, full_mask: str) -> None:
+    def on_part(self, user: User, channel_name: str) -> None:
         """
         Called when a user parts a channel.
         """
 
-    def on_quit(self, nick: str, full_mask: str) -> None:
+    def on_quit(self, user: User) -> None:
         """
         Called when a user quits the network.
         """
@@ -73,9 +73,7 @@ class BotScript:
         Called when bot has connected to the network.
         """
 
-    def on_topic(
-        self, nick: str, channel_name: str, topic: str, full_mask: str
-    ) -> None:
+    def on_topic(self, user: User, channel_name: str, topic: str) -> None:
         """
         Called when topic has changed on a channel.
         """

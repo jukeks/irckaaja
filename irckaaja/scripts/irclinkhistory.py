@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import shove
 
-from irckaaja.botscript import BotScript
+from irckaaja.botscript import BotScript, User
 from irckaaja.client import IrcClient
 
 
@@ -71,7 +71,10 @@ class IrcLinkHistory(BotScript):
             )
 
     def on_channel_message(
-        self, nick: str, channel_name: str, message: str, full_mask: str
+        self,
+        user: User,
+        channel_name: str,
+        message: str,
     ) -> None:
         urls = self.parse_urls(message)
 
@@ -86,7 +89,7 @@ class IrcLinkHistory(BotScript):
             url = url.strip()
             history_tuple = db.get(url)
             if not history_tuple:
-                db[url] = (time.time(), nick, message)
+                db[url] = (time.time(), user.nick, message)
                 db.sync()
             else:
                 old_time, old_nick, old_message = history_tuple

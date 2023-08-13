@@ -300,12 +300,11 @@ class IrcClient:
         """
         source = msg.source.nick
         message = msg.message
-        full_mask = msg.source.full_mask
         self._print_line("PRIVATE" + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_private_message(source, message, full_mask)
+                dm.instance.on_private_message(msg.source, message)
             except Exception as e:
                 print(e)
 
@@ -316,16 +315,14 @@ class IrcClient:
         """
         source = msg.source.nick
         message = msg.message
-        full_mask = msg.source.full_mask
+        msg.source.full_mask
         channel = msg.channel
 
         self._print_line(channel + " <" + source + "> " + message)
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_channel_message(
-                    source, channel, message, full_mask
-                )
+                dm.instance.on_channel_message(msg.source, channel, message)
             except Exception as e:
                 print(e)
 
@@ -417,7 +414,7 @@ class IrcClient:
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_quit(msg.user.nick, msg.user.full_mask)
+                dm.instance.on_quit(msg.user)
             except Exception as e:
                 print(e)
 
@@ -429,7 +426,7 @@ class IrcClient:
 
         channel_name = msg.channel
         nick = msg.user.nick
-        full_mask = msg.user.full_mask
+        msg.user.full_mask
 
         channel = self._find_channel_by_name(channel_name)
         if not channel:
@@ -441,7 +438,7 @@ class IrcClient:
 
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_part(nick, channel_name, full_mask)
+                dm.instance.on_part(msg.user, channel_name)
             except Exception as e:
                 print(e)
 
@@ -453,7 +450,7 @@ class IrcClient:
 
         nick = msg.user.nick
         channel_name = msg.channel
-        full_mask = msg.user.full_mask
+        msg.user.full_mask
 
         channel = self._find_channel_by_name(channel_name)
         if channel:
@@ -462,7 +459,7 @@ class IrcClient:
         self._print_line(nick + " has joined " + channel_name)
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_join(nick, channel_name, full_mask)
+                dm.instance.on_join(msg.user, channel_name)
             except Exception as e:
                 print(e)
 
@@ -474,7 +471,7 @@ class IrcClient:
 
         nick = msg.user.nick
         channel_name = msg.channel
-        full_mask = msg.user.full_mask
+        msg.user.full_mask
         topic = msg.topic
 
         channel = self._find_channel_by_name(channel_name)
@@ -486,7 +483,7 @@ class IrcClient:
         )
         for dm in self.dynamic_modules:
             try:
-                dm.instance.on_topic(nick, channel_name, topic, full_mask)
+                dm.instance.on_topic(msg.user, channel_name, topic)
             except Exception as e:
                 print(e)
 

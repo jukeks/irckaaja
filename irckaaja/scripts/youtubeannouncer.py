@@ -4,14 +4,14 @@ import urllib
 from typing import Any, List
 from xml.dom import minidom
 
-from irckaaja.botscript import BotScript
+from irckaaja.botscript import BotScript, User
 
 APIURL = "http://gdata.youtube.com/feeds/api/videos/"
 
 
 class YoutubeAnnouncer(BotScript):
     def on_channel_message(
-        self, nick: str, target: str, message: str, full_mask: str
+        self, user: User, channel_name: str, message: str
     ) -> None:
         ids = self._parse_ids(message)
 
@@ -19,7 +19,7 @@ class YoutubeAnnouncer(BotScript):
             for id in ids:
                 title = self._query_title(id)
                 if title:
-                    self.say(target, "** " + title + " **")
+                    self.say(channel_name, "** " + title + " **")
 
     @staticmethod
     def _parse_ids(message: str) -> List[str]:
