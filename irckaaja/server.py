@@ -4,6 +4,7 @@ from threading import Thread
 from typing import Any, Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
+from irckaaja.config import ServerConfig
 from irckaaja.dynamicmodule import DynamicModule
 from irckaaja.protocol import (
     ChannelMessage,
@@ -34,15 +35,14 @@ class ServerConnection:
     def __init__(
         self,
         networkname: str,
-        server_config: Dict[str, Any],
+        server_config: ServerConfig,
         bot_config: Dict[str, Any],
         joinlist: List[str],
         modules_config: Dict[str, Any],
     ) -> None:
         self.alive = True
         self.connected = False
-        self.hostname = server_config["hostname"]
-        self.port = int(server_config.get("port", "6667"))
+        self.server_config = server_config
         self.nick = bot_config["nick"]
         self.altnick = bot_config.get("altnick", self.nick + "_")
         self.username = bot_config["username"]
@@ -131,7 +131,9 @@ class ServerConnection:
                         socket.AF_INET, socket.SOCK_STREAM
                     )
 
-                self._socket.connect((self.hostname, self.port))
+                self._socket.connect(
+                    (self.server_config.hostname, self.server_config.port)
+                )
 
                 self.set_nick(self.nick)
                 self.set_user(self.username, self.realname)
@@ -140,7 +142,7 @@ class ServerConnection:
                 break
 
             except Exception as e:
-                self._print_line(str(e) + " " + self.hostname)
+                self._print_line(str(e) + " " + self.server_config.hostname)
                 self._print_line("Trying again in 30 seconds.")
                 self._sleep(30)
 
@@ -272,7 +274,7 @@ class ServerConnection:
         """
         Called when connected to the network.
         """
-        self.send_ping(self.hostname)
+        self.send_ping(self.server_config.hostname)
         self._join_channels()
 
         for dm in self.dynamic_modules:

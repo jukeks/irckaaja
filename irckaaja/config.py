@@ -10,7 +10,7 @@ CONFIG_FILENAME = "config.ini"
 class ServerConfig:
     name: str
     hostname: str
-    port: str
+    port: int
     channels: list[str]
 
 
@@ -25,11 +25,25 @@ class Config:
             self.filename, list_values=True, encoding="utf-8"
         )
 
-    def servers(self) -> Dict[str, Any]:
+    def servers(self) -> Dict[str, ServerConfig]:
         """
         Returns servers as a dictionary.
         """
-        return self.config["servers"]
+        config = {}
+        for alias, server in self.config["servers"].items():
+            channels_raw = server["channels"]
+            if isinstance(channels_raw, str):
+                channels = [channels_raw]
+            else:
+                channels = channels_raw
+
+            config[alias] = ServerConfig(
+                name=alias,
+                hostname=server["hostname"],
+                port=int(server.get("port", "6667")),
+                channels=channels,
+            )
+        return config
 
     def modules(self) -> Dict[str, Any]:
         """
