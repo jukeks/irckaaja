@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from irckaaja.botscript import BotScript
 
 if TYPE_CHECKING:
-    from irckaaja.server import ServerConnection
+    from irckaaja.client import IrcClient
 
 
 class DynamicModule:
@@ -14,7 +14,7 @@ class DynamicModule:
 
     def __init__(
         self,
-        server_connection: "ServerConnection",
+        connection: "IrcClient",
         module_name: str,
         config: Optional[Dict[str, Any]] = None,
     ) -> None:
@@ -22,13 +22,13 @@ class DynamicModule:
         Initialises and tries to load a class in a module in the scripts folder.
         Module should be named <ClassName>.lower().
 
-        server_connection: connection to the network in which the module is
+        connection: connection to the network in which the module is
         related
         modulename: name of the module
         classvar: script class
         instance: instance of classvar
         """
-        self.server_connection = server_connection
+        self.connection = connection
         self.module_name = module_name
         self.module_config = config
 
@@ -42,7 +42,7 @@ class DynamicModule:
 
         self.classvar = getattr(self.module, self.module_name)
         self.instance: BotScript = self.classvar(
-            self.server_connection, self.module_config
+            self.connection, self.module_config
         )
 
     def reload_module(self) -> None:
@@ -52,6 +52,4 @@ class DynamicModule:
         self.instance.kill()
         importlib.reload(self.module)
         self.classvar = getattr(self.module, self.module_name)
-        self.instance = self.classvar(
-            self.server_connection, self.module_config
-        )
+        self.instance = self.classvar(self.connection, self.module_config)

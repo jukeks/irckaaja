@@ -25,16 +25,15 @@ from irckaaja.protocol import (
 )
 
 
-class ServerConnection:
+class IrcClient:
     """
-    Class handling irc servers.
+    IRC Client connection.
     """
 
     PING_INTERVAL_THRESHOLD = 300  # 300 seconds
 
     def __init__(
         self,
-        networkname: str,
         server_config: ServerConfig,
         bot_config: BotConfig,
         modules_config: Dict[str, ScriptConfig],
@@ -43,7 +42,7 @@ class ServerConnection:
         self.connected = False
         self.server_config = server_config
         self.bot_config = bot_config
-        self.networkname = networkname
+        self.networkname = server_config.name
 
         self._reader_thread = Thread(target=self._connection_loop)
         self._parser = MessageParser()
@@ -161,10 +160,7 @@ class ServerConnection:
         self._socket.sendall(bytearray(message, "utf-8"))
 
     def _check_ping_time(self) -> bool:
-        return (
-            time.time() - self._last_ping
-            < ServerConnection.PING_INTERVAL_THRESHOLD
-        )
+        return time.time() - self._last_ping < IrcClient.PING_INTERVAL_THRESHOLD
 
     def _read(self) -> None:
         """

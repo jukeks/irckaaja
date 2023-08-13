@@ -3,7 +3,7 @@ import time
 from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
-    from irckaaja.server import ServerConnection
+    from irckaaja.client import IrcClient
 
 
 class BotScript:
@@ -12,21 +12,19 @@ class BotScript:
     See HelloWorld in scripts.helloworld.py for example.
     """
 
-    def __init__(
-        self, server_connection: "ServerConnection", config: Dict[str, Any]
-    ) -> None:
-        self.server_connection = server_connection
+    def __init__(self, client: "IrcClient", config: Dict[str, Any]) -> None:
+        self.client = client
         self.config = config
         self.alive = True
 
         # usage: self.say(target, message)
-        self.say = server_connection.send_privmsg
+        self.say = client.send_privmsg
 
         # usage: self.joinChannel(channel_name)
-        self.join_channel = server_connection.join_channel
+        self.join_channel = client.join_channel
 
         # usage: self.partChannel(channel_name, reason = "")
-        self.leave_channel = server_connection.leave_channel
+        self.leave_channel = client.leave_channel
 
     def sleep(self, seconds: float) -> None:
         """

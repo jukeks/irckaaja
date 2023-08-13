@@ -14,7 +14,7 @@ class ModuleLoader(BotScript):
         self, source: str, message: str, full_mask: str
     ) -> None:
         # authenticating
-        if full_mask != self.server_connection.bot_config.owner:
+        if full_mask != self.client.bot_config.owner:
             return
 
         # checking if we got a relevant message
@@ -36,7 +36,7 @@ class ModuleLoader(BotScript):
         module_name = message.replace("!load ", "")
 
         # Not loading if it's already loaded
-        for dm in self.server_connection.dynamic_modules:
+        for dm in self.client.dynamic_modules:
             if dm.module_name == module_name:
                 self.say(
                     source, "module " + str(dm.classvar) + " already loaded"
@@ -45,11 +45,11 @@ class ModuleLoader(BotScript):
 
         # Loading and appending to the list
         dm = DynamicModule(
-            self.server_connection,
+            self.client,
             module_name,
-            self.server_connection.modules_config[module_name].config,
+            self.client.modules_config[module_name].config,
         )
-        self.server_connection.dynamic_modules.append(dm)
+        self.client.dynamic_modules.append(dm)
 
         self.say(source, "loaded " + str(dm.classvar))
         return True
@@ -61,7 +61,7 @@ class ModuleLoader(BotScript):
         module_name = message.replace("!reload ", "")
 
         # finding the module to reload
-        for dm in self.server_connection.dynamic_modules:
+        for dm in self.client.dynamic_modules:
             if dm.module_name != module_name:
                 continue
 
@@ -80,12 +80,12 @@ class ModuleLoader(BotScript):
         module_name = message.replace("!unload ", "")
 
         # finding the module in the list by name
-        for dm in self.server_connection.dynamic_modules:
+        for dm in self.client.dynamic_modules:
             if dm.module_name != module_name:
                 continue
 
             # unloading
-            self.server_connection.dynamic_modules.remove(dm)
+            self.client.dynamic_modules.remove(dm)
             self.say(source, "unloaded  " + str(dm.classvar))
             del dm
             return True

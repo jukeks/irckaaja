@@ -1,8 +1,8 @@
 from optparse import OptionParser, Values
 from time import sleep
 
+from irckaaja.client import IrcClient
 from irckaaja.config import Config
-from irckaaja.server import ServerConnection
 
 
 def get_options() -> Values:
@@ -25,14 +25,12 @@ def main() -> None:
     conf = Config(options.configfile)
     modulesd = conf.modules()
     bot_info = conf.bot()
-    server_connection_list = []
+    connection_list = []
 
-    for network_name, server_conf in conf.servers().items():
-        server_connection_list.append(
-            ServerConnection(network_name, server_conf, bot_info, modulesd)
-        )
+    for server_conf in conf.servers().values():
+        connection_list.append(IrcClient(server_conf, bot_info, modulesd))
 
-    for s in server_connection_list:
+    for s in connection_list:
         s.connect()
 
     # Interrupts are only handled in the main thread in Python so...
@@ -40,7 +38,7 @@ def main() -> None:
         try:
             sleep(1.0)
         except KeyboardInterrupt:
-            for s in server_connection_list:
+            for s in connection_list:
                 s.kill()
             break
 

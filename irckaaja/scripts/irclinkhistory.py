@@ -4,14 +4,12 @@ from typing import Any, Dict
 import shove
 
 from irckaaja.botscript import BotScript
-from irckaaja.server import ServerConnection
+from irckaaja.client import IrcClient
 
 
 class IrcLinkHistory(BotScript):
-    def __init__(
-        self, server_connection: ServerConnection, config: Dict[str, Any]
-    ) -> None:
-        BotScript.__init__(self, server_connection, config)
+    def __init__(self, connection: IrcClient, config: Dict[str, Any]) -> None:
+        BotScript.__init__(self, connection, config)
 
         self.store_path = config["store_path"]
 
