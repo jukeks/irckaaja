@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from configobj import ConfigObj
 
@@ -21,6 +21,12 @@ class BotConfig:
     realname: str
     username: str
     owner: str
+
+
+@dataclass
+class ScriptConfig:
+    module_name: str
+    config: Dict[str, Any]
 
 
 class Config:
@@ -54,19 +60,15 @@ class Config:
             )
         return config
 
-    def modules(self) -> Dict[str, Any]:
+    def modules(self) -> Dict[str, ScriptConfig]:
         """
-        Returns a dictionary of  modules defined in the
+        Returns a dictionary of modules defined in the
         conf to be loaded.
         """
-        return self.config["modules"]
-
-    def channels(self, servername: str) -> List[str]:
-        """
-        Returns a list of channels to be joined
-        on a network (server).
-        """
-        return self.config["servers"][servername].get("channels", [])
+        modules = {}
+        for name, config in self.config["modules"].items():
+            modules[name] = ScriptConfig(module_name=name, config=config)
+        return modules
 
     def bot(self) -> BotConfig:
         """

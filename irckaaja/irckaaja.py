@@ -28,11 +28,8 @@ def main() -> None:
     server_connection_list = []
 
     for network_name, server_conf in conf.servers().items():
-        join_list = conf.channels(network_name)
         server_connection_list.append(
-            ServerConnection(
-                network_name, server_conf, bot_info, join_list, modulesd
-            )
+            ServerConnection(network_name, server_conf, bot_info, modulesd)
         )
 
     for s in server_connection_list:

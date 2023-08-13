@@ -1,10 +1,10 @@
 import socket
 import time
 from threading import Thread
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
-from irckaaja.config import BotConfig, ServerConfig
+from irckaaja.config import BotConfig, ScriptConfig, ServerConfig
 from irckaaja.dynamicmodule import DynamicModule
 from irckaaja.protocol import (
     ChannelMessage,
@@ -37,16 +37,13 @@ class ServerConnection:
         networkname: str,
         server_config: ServerConfig,
         bot_config: BotConfig,
-        joinlist: List[str],
-        modules_config: Dict[str, Any],
+        modules_config: Dict[str, ScriptConfig],
     ) -> None:
         self.alive = True
         self.connected = False
         self.server_config = server_config
         self.bot_config = bot_config
         self.networkname = networkname
-
-        self.joinlist = joinlist
 
         self._reader_thread = Thread(target=self._connection_loop)
         self._parser = MessageParser()
@@ -56,7 +53,8 @@ class ServerConnection:
 
         self.modules_config = modules_config
         self.dynamic_modules: List[DynamicModule] = [
-            DynamicModule(self, m, c) for m, c in modules_config.items()
+            DynamicModule(self, script_config.module_name, script_config.config)
+            for script_config in modules_config.values()
         ]
 
         self._last_ping = time.time()
@@ -285,7 +283,7 @@ class ServerConnection:
         """
         Joins channels specified in self.joinlist
         """
-        for channel in self.joinlist:
+        for channel in self.server_config.channels:
             self.join_channel(channel)
 
     def kill(self) -> None:

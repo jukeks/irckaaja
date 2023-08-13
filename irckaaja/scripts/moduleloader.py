@@ -47,7 +47,7 @@ class ModuleLoader(BotScript):
         dm = DynamicModule(
             self.server_connection,
             module_name,
-            self.server_connection.modules_config[module_name],
+            self.server_connection.modules_config[module_name].config,
         )
         self.server_connection.dynamic_modules.append(dm)
 
