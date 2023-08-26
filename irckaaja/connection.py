@@ -1,4 +1,5 @@
 import socket
+from datetime import timedelta
 from typing import List
 
 from irckaaja.protocol import MessageParser, ParsedMessage
@@ -9,17 +10,23 @@ class IrcConnection:
     IRC Connection
     """
 
-    def __init__(self, hostname: str, port: int) -> None:
+    def __init__(
+        self,
+        hostname: str,
+        port: int,
+        timeout: timedelta = timedelta(seconds=1),
+    ) -> None:
         self._hostname = hostname
         self._port = port
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._buff = ""
         self._parser = MessageParser()
         self._encoding = "utf-8"
+        self._timeout = timeout.total_seconds()
 
     def connect(self) -> None:
         self._socket.connect((self._hostname, self._port))
-        self._socket.settimeout(1.0)
+        self._socket.settimeout(self._timeout)
 
     def write(self, message: str) -> None:
         self._socket.sendall(bytearray(message, self._encoding))
@@ -30,8 +37,8 @@ class IrcConnection:
         except socket.timeout:
             return []
 
-        if read == "":
-            # socket.recv() returns empty string for closed sockets
+        if len(read) == 0:
+            # socket.recv() returns empty buff for closed sockets
             raise EOFError()
 
         self._buff += read.decode(self._encoding)
