@@ -1,17 +1,16 @@
-import socket
 import time
 from threading import Thread
 from typing import Dict, List, Optional
 
 from irckaaja.channel import IrcChannel
 from irckaaja.config import BotConfig, ScriptConfig, ServerConfig
+from irckaaja.connection import IrcConnection
 from irckaaja.dynamicmodule import DynamicModule
 from irckaaja.protocol import (
     ChannelMessage,
     CTCPVersionMessage,
     EndOfMotdMessage,
     JoinMessage,
-    MessageParser,
     MessageType,
     ParsedMessage,
     PartMessage,
@@ -27,7 +26,7 @@ from irckaaja.protocol import (
 
 class IrcClient:
     """
-    IRC Client connection.
+    IRC Client
     """
 
     PING_INTERVAL_THRESHOLD = 300  # 300 seconds
@@ -45,8 +44,9 @@ class IrcClient:
         self.networkname = server_config.name
 
         self._reader_thread = Thread(target=self._connection_loop)
-        self._parser = MessageParser()
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._connection = IrcConnection(
+            self.server_config.hostname, self.server_config.port
+        )
 
         self._channel_list: List[IrcChannel] = []
 
@@ -118,15 +118,11 @@ class IrcClient:
     def _connect(self) -> None:
         while self.alive:
             try:
-                if self._socket:
-                    self._socket.close()
-                    self._socket = socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM
-                    )
-
-                self._socket.connect(
-                    (self.server_config.hostname, self.server_config.port)
+                self._connection.close()
+                self._connection = IrcConnection(
+                    self.server_config.hostname, self.server_config.port
                 )
+                self._connection.connect()
 
                 self.set_nick(self.bot_config.nick)
                 self.set_user(
@@ -144,7 +140,7 @@ class IrcClient:
     def _connection_loop(self) -> None:
         while self.alive:
             self._connect()
-            self._read()
+            self._process()
 
             if not self.alive:
                 break
@@ -157,7 +153,7 @@ class IrcClient:
         Prints and writes message to server.
         """
         self._print_line(message[:-1])
-        self._socket.sendall(bytearray(message, "utf-8"))
+        self._connection.write(message)
 
     def _check_ping_time(self) -> bool:
         return (
@@ -165,37 +161,23 @@ class IrcClient:
             < IrcClient.PING_INTERVAL_THRESHOLD
         )
 
-    def _read(self) -> None:
+    def _process(self) -> None:
         """
         Reads and handles messages.
         """
-        self._socket.settimeout(1.0)
-        buff = ""
         while self.alive and self._check_ping_time():
             try:
-                read = self._socket.recv(4096)
-            except socket.timeout:
-                continue
-            except OSError as e:
+                messages = self._connection.read()
+            except (OSError, EOFError) as e:
                 self._print_line(str(e))
                 break
-            except KeyboardInterrupt:
-                self.kill()
-                return
 
             if not self.alive:
                 break
 
-            if not read:
-                # EOF
-                break
+            self._handle_messages(messages)
 
-            buff += read.decode("utf-8")
-            parsed_messages, remainder = self._parser.parse_buffer(buff)
-            buff = remainder
-            self._handle_messages(parsed_messages)
-
-        self._socket.close()
+        self._connection.close()
         self._print_line("Connection closed.")
         self.connected = False
 
