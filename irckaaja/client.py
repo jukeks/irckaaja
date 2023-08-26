@@ -19,6 +19,7 @@ from irckaaja.protocol import (
     QuitMessage,
     TopicMessage,
     TopicReplyMessage,
+    User,
     UsersEndMessage,
     UsersMessage,
 )
@@ -453,7 +454,6 @@ class IrcClient:
 
         nick = msg.user.nick
         channel_name = msg.channel
-        msg.user.full_mask
         topic = msg.topic
 
         channel = self._find_channel_by_name(channel_name)
@@ -483,6 +483,11 @@ class IrcClient:
             channel.topic = topic
 
         self._print_line("Topic in " + channel_name + ": " + topic)
+        for dm in self.dynamic_modules:
+            try:
+                dm.instance.on_topic(User(msg.nick, ""), channel_name, topic)
+            except Exception as e:
+                print(e)
 
     def _ctcp_message_received(
         self,

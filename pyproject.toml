@@ -26,6 +26,7 @@ setuptools = "*"
 pytest = "*"
 build = "*"
 twine = "*"
+pytest-cov = "*"
 
 [tool.black]
 line-length = 80
@@ -40,3 +41,13 @@ max-line-length = 80
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+source = ["irckaaja"]
+omit = ["irckaaja/scripts/*"]
+
+[tool.coverage.report]
+fail_under = 81
+
+[tool.pytest.ini_options]
+addopts = "--cov=irckaaja"
