@@ -46,7 +46,7 @@ class Config:
         """
         config = {}
         for alias, server in self.config["servers"].items():
-            channels_raw = server["channels"]
+            channels_raw = server.get("channels", [])
             if isinstance(channels_raw, str):
                 channels = [channels_raw]
             else:
