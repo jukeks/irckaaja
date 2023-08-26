@@ -27,6 +27,23 @@ def test_bot_config(tmp_path: pathlib.Path) -> None:
     )
 
 
+def test_missing_altnick(tmp_path: pathlib.Path) -> None:
+    conf = """
+[bot]
+    nick = irckaaja
+    realname = Bot Real Name
+    username = irckaaja
+    owner = "nick!user@example.com"
+    """
+
+    p = tmp_path / "config.ini"
+    p.write_text(conf)
+
+    c = Config(config_filename=str(p))
+    bot_config = c.bot()
+    assert bot_config.altnick == "irckaaja_"
+
+
 def test_server_config(tmp_path: pathlib.Path) -> None:
     conf = """
 [servers]
