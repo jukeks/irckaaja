@@ -77,7 +77,7 @@ class Config:
         config = self.config["bot"]
         return BotConfig(
             nick=config["nick"],
-            altnick=config["altnick"],
+            altnick=config.get("altnick", config["nick"] + "_"),
             realname=config["realname"],
             username=config["username"],
             owner=config["owner"],
