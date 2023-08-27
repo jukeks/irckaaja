@@ -27,6 +27,7 @@ pytest = "*"
 build = "*"
 twine = "*"
 pytest-cov = "*"
+irc-parser-tests = "*"
 
 [tool.black]
 line-length = 80

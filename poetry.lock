@@ -580,6 +580,21 @@ files = [
 ]
 
 [[package]]
+name = "irc-parser-tests"
+version = "0.0.4"
+description = "A library of tests for various IRC protocol parsers"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "irc-parser-tests-0.0.4.tar.gz", hash = "sha256:7d5037859d3a7977d468b1781f931de47011a5b6dfcd6afb5ed1506f91f31dce"},
+    {file = "irc_parser_tests-0.0.4-py3-none-any.whl", hash = "sha256:a6cbe04063723a6fcf9a117b5e62d0e0bd492f35b2889354574404c1c47f4470"},
+]
+
+[package.dependencies]
+PyYaml = "*"
+
+[[package]]
 name = "isort"
 version = "5.12.0"
 description = "A Python utility / library to sort Python imports."
@@ -1331,4 +1346,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "025554199c5d53b38292682859d0c166a9f54586638d941f24865f0555a30af0"
+content-hash = "3c797684cc3bcbc16b57d5acd510b35e5d58ae5dca59f10bedc58857f92509ca"

@@ -1,0 +1,20 @@
+NOTICE AUTH :*** Looking up your hostname
+NOTICE AUTH :*** Checking Ident
+PING :451129368
+NOTICE AUTH :*** Found your hostname
+NOTICE AUTH :*** No ident response
+:server.example.org NOTICE irckaaja :Highest connection count: 2819 (2818 clients)
+:server.example.org 372 irckaaja :-                    Welcome to the IRC Network!
+:server.example.org 372 irckaaja :-
+:server.example.org 376 irckaaja :End of /MOTD command.
+:server.example.org NOTICE irckaaja :on 1 ca 1(4) ft 19(20) tr
+:server.example.org 221 irckaaja +i
+:irckaaja!~irckaaja@client.example.org MODE irckaaja +i
+:server.example.org PONG server.example.org :server.example.org
+:irckaaja!~irckaaja@client.example.org JOIN #testchannel
+:server.example.org 332 irckaaja #testchannel :let's test
+:server.example.org 333 irckaaja #testchannel juke 1693136588
+:server.example.org 353 irckaaja = #testchannel :irckaaja @juke
+:server.example.org 366 irckaaja #testchannel :End of /NAMES list.
+:nick@username@client2.example.org PRIVMSG #testchannel :hello there
+:nick@username@client2.example.org TOPIC #testchannel :let's talk

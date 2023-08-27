@@ -49,7 +49,7 @@ def test_client() -> None:
 
                 if "USER " in line:
                     self.wfile.write(
-                        b":localhost 376 \r\n"
+                        b":localhost 376 :\r\n"
                     )  # respond with end of MOTD
 
                 if "JOIN " in line:
