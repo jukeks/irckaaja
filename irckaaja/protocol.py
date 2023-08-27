@@ -1,5 +1,4 @@
-import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import List, Optional, Tuple
 
@@ -145,346 +144,105 @@ class ParsedMessage:
     ctcp_dcc_message: Optional[CTCPDCCMessage] = None
 
     raw_message: Optional[str] = None
+    prefix: Optional[str] = None
+    command: Optional[str] = None
+    params: List[str] = field(default_factory=list)
+
+
+def stripping_partition(s: str) -> Tuple[str, str]:
+    """
+    <SPACE>    ::= ' ' { ' ' }
+    """
+    before, _, rest = s.partition(" ")
+    return before, rest.lstrip(" ")
+
+
+def parse_full_mask(mask: str) -> User:
+    """
+    <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+    """
+
+    if "!" in mask:
+        nick, _, _ = mask.partition("!")
+        return User(nick=nick, full_mask=mask)
+    if "@" in mask:
+        nick, _, _ = mask.partition("@")
+        return User(nick=nick, full_mask=mask)
+
+    return User(nick=mask, full_mask=mask)
+
+
+@dataclass
+class Atoms:
+    prefix: str
+    command: str
+    params: List[str]
+
+    @classmethod
+    def parse_params(cls, params_raw: str) -> List[str]:
+        """
+        <params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+        <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
+                    or NUL or CR or LF, the first of which may not be ':'>
+        <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+                        NUL or CR or LF>
+        """
+        params = []
+        rest = params_raw
+        while rest != "":
+            if rest.startswith(":"):
+                # trailing i.e. last param
+                params.append(rest[1:])
+                break
+            param, rest = stripping_partition(rest)
+            params.append(param)
+        return params
+
+    @classmethod
+    def from_message(cls, message: str) -> "Atoms":
+        """
+        From https://datatracker.ietf.org/doc/html/rfc1459#section-2.3.1
+
+        <message>  ::= [':' <prefix> <SPACE> ] <command> <params> <crlf>
+        <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+        <command>  ::= <letter> { <letter> } | <number> <number> <number>
+        <SPACE>    ::= ' ' { ' ' }
+        <params>   ::= <SPACE> [ ':' <trailing> | <middle> <params> ]
+
+        <middle>   ::= <Any *non-empty* sequence of octets not including SPACE
+                    or NUL or CR or LF, the first of which may not be ':'>
+        <trailing> ::= <Any, possibly *empty*, sequence of octets not including
+                        NUL or CR or LF>
+
+        <crlf>     ::= CR LF
+        """
+        rest = message
+
+        prefix = ""
+        if rest.startswith(":"):
+            prefix, rest = stripping_partition(rest)
+            prefix = prefix[1:]
+
+        command, params_raw = stripping_partition(rest)
+        params = cls.parse_params(params_raw)
+
+        return Atoms(prefix=prefix, command=command, params=params)
 
 
 class MessageParser:
-    """
-    Parses IRC protocol messages.
-    """
-
-    def _check_for_ctcp(self, message: str) -> bool:
-        ":juke!juke@jukk.is PRIVMSG irckaaja :\x01VERSION\x01"
-        try:
-            return ord(message[0]) == 1 and ord(message[-1]) == 1
-        except ValueError:
-            return False
-
-    def _check_for_privmsg(self, message: str) -> Optional[ParsedMessage]:
-        ":juke!~Jukkis@kosh.hut.fi PRIVMSG #testidevi :asdfadsf :D"
-        privmsg_pattern = re.compile(
-            r"""   # full host mask (1)
-                    ^:((.*?)               # nick (2)
-                    \!(.*?)                # username (3)
-                    @(.*?))\s              # hostname (4)
-                    PRIVMSG\s              # message type
-                    (([\#|\!].*?)|(.*?))\s # channel (5)(6) or nick (5)
-                    :(.*.?)                # message (8)
-                    """,
-            re.X,
-        )
-
-        privmsg = privmsg_pattern.match(message)
-        if not privmsg:
-            return None
-
-        try:
-            source = privmsg.group(2)
-            full_mask = privmsg.group(1)
-            message = privmsg.group(8)
-
-            user = User(source, full_mask)
-
-            # channel
-            if privmsg.group(5) == privmsg.group(6):
-                channel = privmsg.group(5)
-                return ParsedMessage(
-                    type=MessageType.CHANNEL_MESSAGE,
-                    channel_message=ChannelMessage(
-                        source=user, message=message, channel=channel
-                    ),
-                )
-            # private
-            else:
-                if self._check_for_ctcp(message):
-                    return self._parse_ctcp_message(user, message)
-                return ParsedMessage(
-                    type=MessageType.PRIVATE_MESSAGE,
-                    private_message=PrivateMessage(
-                        source=user,
-                        message=message,
-                    ),
-                )
-        except AttributeError:
-            pass
-
-        return None
-
-    def _parse_ctcp_message(self, user: User, message: str) -> ParsedMessage:
-        if message == "\x01VERSION\x01":
-            return ParsedMessage(
-                MessageType.CTCP_VERSION,
-                ctcp_version_message=CTCPVersionMessage(user=user),
-            )
-
-        elif message.startswith("\x01PING"):
-            try:
-                _, time, id = message.replace("\x01", "").split(" ")
-                return ParsedMessage(
-                    MessageType.CTCP_PING,
-                    ctcp_ping_message=CTCPPingMessage(
-                        user=user, id=id, time=time
-                    ),
-                )
-            except ValueError:
-                return ParsedMessage(MessageType.UNKNOWN, raw_message=message)
-
-        elif message.startswith("\x01TIME\x01"):
-            return ParsedMessage(
-                MessageType.CTCP_TIME,
-                ctcp_time_message=CTCPTimeMessage(user=user),
-            )
-
-        elif message.startswith("\x01DCC"):
-            return ParsedMessage(
-                MessageType.CTCP_DCC, ctcp_dcc_message=CTCPDCCMessage(user=user)
-            )
-
-        return ParsedMessage(MessageType.UNKNOWN, raw_message=message)
-
-    def _checkForNickInUse(self, message: str) -> Optional[ParsedMessage]:
-        ":port80b.se.quakenet.org 433 * irckaaja :Nickname is already in use."
-
-    def _check_for_users(self, message: str) -> Optional[ParsedMessage]:
-        ":irc.cs.hut.fi 353 nettitutkabot @ #channelname :yournick @juke"
-        users_pattern = re.compile(
-            r"""
-                ^:.*?\s            # server
-                353\s              # users code
-                .*?\s              # nick
-                [=|\@]\s
-                ([\#|\!].*?)\s     # channel (1)
-                :(.*)              # users (2)
-                """,
-            re.X,
-        )
-
-        match = users_pattern.match(message)
-        if not match:
-            return None
-
-        channel = match.group(1)
-        userlist = match.group(2).split(" ")
-        return ParsedMessage(
-            MessageType.USERS,
-            users_message=UsersMessage(channel=channel, users=userlist),
-        )
-
-    def _check_for_users_end(self, message: str) -> Optional[ParsedMessage]:
-        users_pattern = re.compile(
-            r"""
-                ^:.*?\s           # server
-                366\s             # users end code
-                .*?\s             # nick
-                ([\#|\!].*?)\s    # channel (1)
-                :(.*)             # message (2)
-                """,
-            re.X,
-        )
-
-        match = users_pattern.match(message)
-        if not match:
-            return None
-
-        channel = match.group(1)
-
-        return ParsedMessage(
-            MessageType.END_OF_USERS,
-            users_end_message=UsersEndMessage(channel=channel),
-        )
-
-    def _check_for_ping(self, message: str) -> Optional[ParsedMessage]:
-        if not message.startswith("PING"):
-            return None
-
-        _, _, message = message.partition(" :")
-        return ParsedMessage(
-            MessageType.PING, ping_message=PingMessage(message=message)
-        )
-
-    def _check_for_end_of_motd(self, message: str) -> Optional[ParsedMessage]:
-        motd_pattern = re.compile(
-            r"""
-                ^:         # start and :
-                .*?\s      # server hostname
-                376\s      # MODE for end of motd message
-                """,
-            re.X,
-        )
-
-        if not motd_pattern.match(message):
-            return None
-
-        return ParsedMessage(
-            MessageType.END_OF_MOTD,
-            end_of_motd_message=EndOfMotdMessage(message=message),
-        )
-
-    def _check_for_quit(self, message: str) -> Optional[ParsedMessage]:
-        ":user!~user@c-111-222-00-123.example.net QUIT :Signed off"
-        quit_pattern = re.compile(
-            r"""             # fullmask (1)
-                ^:((.*?)     # nick (2)
-                \!(.*?)      # username (3)
-                @(.*?))\s    # hostname (4)
-                QUIT\s       # message type
-                :(.*.?)      # message (5)
-                """,
-            re.X,
-        )
-
-        match = quit_pattern.match(message)
-        if not match:
-            return None
-
-        nick = match.group(2)
-        full_mask = match.group(1)
-        quit_message = match.group(5)
-        user = User(nick=nick, full_mask=full_mask)
-        return ParsedMessage(
-            MessageType.QUIT,
-            quit_message=QuitMessage(user=user, message=quit_message),
-        )
-
-    def _check_for_part(self, message: str) -> Optional[ParsedMessage]:
-        ":user!~user@example.org PART #example"
-        part_pattern = re.compile(
-            r"""                  # fullmask (1)
-                    ^:((.*?)      # nick (2)
-                    \!(.*?)       # username (3)
-                    @(.*?))\s     # hostname (4)
-                    PART\s        # message type
-                    ([\#|\!].*.?) # channel (5)
-                    """,
-            re.X,
-        )
-
-        match = part_pattern.match(message)
-        if not match:
-            return None
-
-        full_mask = match.group(1)
-        nick = match.group(2)
-        user = User(nick=nick, full_mask=full_mask)
-        channel_name = match.group(5)
-
-        return ParsedMessage(
-            MessageType.PART,
-            part_message=PartMessage(
-                user=user,
-                channel=channel_name,
-            ),
-        )
-
-    def _check_for_join(self, message: str) -> Optional[ParsedMessage]:
-        ":user!user@example.org JOIN :#example"
-        join_pattern = re.compile(
-            r"""              # fullmask (1)
-                ^:((.*?)      # nick (2)
-                \!(.*?)       # username (3)
-                @(.*?))\s     # hostname (4)
-                JOIN\s:?      # message type
-                ([\#|\!].*.?) # channel (5)
-                """,
-            re.X,
-        )
-
-        match = join_pattern.match(message)
-        if not match:
-            return None
-
-        full_mask = match.group(1)
-        nick = match.group(2)
-        user = User(nick=nick, full_mask=full_mask)
-        channel_name = match.group(5)
-
-        return ParsedMessage(
-            MessageType.JOIN,
-            join_message=JoinMessage(user=user, channel=channel_name),
-        )
-
-    def _check_for_topic_reply(self, message: str) -> Optional[ParsedMessage]:
-        ":dreamhack.se.quakenet.org 332 irckaaja #testidevi2 :asd"
-        topic_reply_pattern = re.compile(
-            r"""
-                ^:.*?\s        # server
-                332\s          # topic reply code
-                (.*?)\s        # nick (1)
-                ([\#|\!].*?)\s # channel (2)
-                :(.*)          # topic (3)
-                """,
-            re.X,
-        )
-
-        match = topic_reply_pattern.match(message)
-        if not match:
-            return None
-
-        nick = match.group(1)
-        channel_name = match.group(2)
-        topic = match.group(3)
-
-        return ParsedMessage(
-            MessageType.TOPIC_REPLY,
-            topic_reply_message=TopicReplyMessage(
-                nick=nick, channel=channel_name, topic=topic
-            ),
-        )
-
-    def _check_for_topic(self, message: str) -> Optional[ParsedMessage]:
-        ":user!~user@example.org TOPIC #example :lol"
-        topic_pattern = re.compile(
-            r"""                 # fullmask (1)
-                ^:((.*?)         # nick (2)
-                \!(.*?)          # username (3)
-                @(.*?))\s        # hostname (4)
-                TOPIC\s:?        # message type
-                ([\#|\!].*.?)\s  # channel (5)
-                :(.*.?)          # topic (6)
-                """,
-            re.X,
-        )
-        match = topic_pattern.match(message)
-        if not match:
-            return None
-
-        full_mask = match.group(1)
-        nick = match.group(2)
-        user = User(nick=nick, full_mask=full_mask)
-        channel_name = match.group(5)
-        topic = match.group(6)
-
-        return ParsedMessage(
-            MessageType.TOPIC,
-            topic_message=TopicMessage(
-                user=user,
-                topic=topic,
-                channel=channel_name,
-            ),
-        )
-
-    def _parse_message(self, message: str) -> Optional[ParsedMessage]:
-        """
-        Tries to figure out what the message is.
-        """
-        checkers = [
-            self._check_for_end_of_motd,
-            self._check_for_join,
-            self._check_for_ping,
-            self._check_for_privmsg,
-            self._check_for_users,
-            self._check_for_users_end,
-            self._check_for_part,
-            self._check_for_quit,
-            self._check_for_topic,
-            self._check_for_topic_reply,
-        ]
-
-        for checker in checkers:
-            parsed_message = checker(message)
-            if parsed_message:
-                return parsed_message
-
-        return ParsedMessage(MessageType.UNKNOWN, raw_message=message)
+    def __init__(self) -> None:
+        self.parsers = {
+            "PRIVMSG": self.parse_privmsg,
+            "JOIN": self.parse_join,
+            "PART": self.parse_part,
+            "PING": self.parse_ping,
+            "QUIT": self.parse_quit,
+            "353": self.parse_users,
+            "366": self.parse_users_end,
+            "376": self.parse_end_of_motd,
+            "TOPIC": self.parse_topic,
+            "332": self.parse_server_topic,
+        }
 
     def parse_buffer(self, buff: str) -> Tuple[List[ParsedMessage], str]:
         """
@@ -494,9 +252,142 @@ class MessageParser:
         parsed_messages = []
         while "\r\n" in buff:
             message, _, buff = buff.partition("\r\n")
-            parsed = self._parse_message(message)
+            parsed = self.parse_message(message)
             if parsed is None:
                 continue
             parsed_messages.append(parsed)
 
         return parsed_messages, buff
+
+    def parse_message(self, message: str) -> Optional[ParsedMessage]:
+        atoms = Atoms.from_message(message)
+        if atoms.command in self.parsers:
+            return self.parsers[atoms.command](atoms.prefix, atoms.params)
+
+        return ParsedMessage(
+            MessageType.UNKNOWN,
+            raw_message=message,
+            prefix=atoms.prefix,
+            command=atoms.command,
+            params=atoms.params,
+        )
+
+    def parse_privmsg(
+        self, source_full_mask: str, params: List[str]
+    ) -> ParsedMessage:
+        source = parse_full_mask(source_full_mask)
+        target, message = params
+        if target.startswith("#") or target.startswith("!"):
+            return ParsedMessage(
+                type=MessageType.CHANNEL_MESSAGE,
+                channel_message=ChannelMessage(
+                    source=source,
+                    channel=target,
+                    message=message,
+                ),
+            )
+        return ParsedMessage(
+            type=MessageType.PRIVATE_MESSAGE,
+            private_message=PrivateMessage(
+                source=source,
+                message=message,
+            ),
+        )
+
+    def parse_join(self, full_mask: str, params: List[str]) -> ParsedMessage:
+        channel = params[0]
+        return ParsedMessage(
+            type=MessageType.JOIN,
+            join_message=JoinMessage(
+                user=parse_full_mask(full_mask), channel=channel
+            ),
+        )
+
+    def parse_part(self, full_mask: str, params: List[str]) -> ParsedMessage:
+        channel = params[0]
+        return ParsedMessage(
+            type=MessageType.PART,
+            part_message=PartMessage(
+                user=parse_full_mask(full_mask), channel=channel
+            ),
+        )
+
+    def parse_ping(self, _: str, params: List[str]) -> ParsedMessage:
+        message = params[0]
+        return ParsedMessage(
+            type=MessageType.PING, ping_message=PingMessage(message=message)
+        )
+
+    def parse_quit(self, full_mask: str, params: List[str]) -> ParsedMessage:
+        user = parse_full_mask(full_mask)
+        message = params[0]
+
+        return ParsedMessage(
+            type=MessageType.QUIT,
+            quit_message=QuitMessage(user=user, message=message),
+        )
+
+    def parse_users(self, _: str, params: List[str]) -> ParsedMessage:
+        """
+        :example.org 353 irckaaja @ #channelname :yournick @juke
+        """
+        _, _, channel, raw_user_list = params
+        user_list = raw_user_list.split(" ")
+        return ParsedMessage(
+            type=MessageType.USERS,
+            users_message=UsersMessage(channel=channel, users=user_list),
+        )
+
+    def parse_users_end(self, _: str, params: List[str]) -> ParsedMessage:
+        """
+        :example.org 366 irckaaja #channelname :End of /NAMES list.
+        :another.example.org 366 irckaaja @ #channelname :End of /NAMES list.
+        """
+        if len(params) == 3:
+            _, channel, _ = params
+        else:
+            _, _, channel, _ = params
+
+        return ParsedMessage(
+            type=MessageType.END_OF_USERS,
+            users_end_message=UsersEndMessage(channel=channel),
+        )
+
+    def parse_end_of_motd(self, _: str, params: List[str]) -> ParsedMessage:
+        """
+        :example.org 376 irckaaja :End of /MOTD command.
+        """
+        message = params[0]
+        return ParsedMessage(
+            type=MessageType.END_OF_MOTD,
+            end_of_motd_message=EndOfMotdMessage(message=message),
+        )
+
+    def parse_topic(self, full_mask: str, params: List[str]) -> ParsedMessage:
+        """
+        :user!~user@example.org TOPIC #channelname :topic message
+        """
+        user = parse_full_mask(full_mask)
+        channel, topic = params
+        return ParsedMessage(
+            type=MessageType.TOPIC,
+            topic_message=TopicMessage(
+                user=user,
+                channel=channel,
+                topic=topic.lstrip(":"),
+            ),
+        )
+
+    def parse_server_topic(self, _: str, params: List[str]) -> ParsedMessage:
+        """
+        :server.example.org 332 irckaaja #testchannel :let's test
+        """
+        nick, channel, topic = params
+        return ParsedMessage(
+            type=MessageType.TOPIC_REPLY,
+            topic_reply_message=TopicReplyMessage(
+                nick=nick,
+                channel=channel,
+                topic=topic.lstrip(":"),
+            ),
+        )
