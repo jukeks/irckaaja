@@ -1,5 +1,6 @@
 from typing import cast
 
+import pytest
 from parser_tests import data as parser_test_cases
 
 from irckaaja.protocol import (
@@ -11,6 +12,8 @@ from irckaaja.protocol import (
     PartMessage,
     PrivateMessage,
     QuitMessage,
+    TopicMessage,
+    TopicReplyMessage,
     UsersEndMessage,
     UsersMessage,
     parse_full_mask,
@@ -61,8 +64,14 @@ def test_users_message() -> None:
     assert msg.users == ["yournick", "@juke"]
 
 
-def test_users_end_message() -> None:
-    message = ":example.org 366 user @ #channelname :End of /NAMES list."
+@pytest.mark.parametrize(
+    "message",
+    [
+        ":example.org 366 user @ #channelname :End of /NAMES list.",
+        ":example.org 366 irckaaja #channelname :End of /NAMES list.",
+    ],
+)
+def test_users_end_message(message: str) -> None:
     parser = MessageParser()
     parsed = parser.parse_message(message)
     assert parsed
@@ -115,6 +124,31 @@ def test_quit_message() -> None:
     msg = cast(QuitMessage, parsed.message)
     assert msg
     assert msg.user.nick == "nick"
+
+
+def test_topic_message() -> None:
+    message = ":user!~user@example.org TOPIC #channelname :topic message"
+    parser = MessageParser()
+    parsed = parser.parse_message(message)
+    assert parsed
+    assert parsed.type == MessageType.TOPIC
+    msg = cast(TopicMessage, parsed.message)
+    assert msg
+    assert msg.user.nick == "user"
+    assert msg.channel == "#channelname"
+    assert msg.topic == "topic message"
+
+
+def test_topic_reply_message() -> None:
+    message = ":example.org 332 user #channelname :let's test"
+    parser = MessageParser()
+    parsed = parser.parse_message(message)
+    assert parsed
+    assert parsed.type == MessageType.TOPIC_REPLY
+    msg = cast(TopicReplyMessage, parsed.message)
+    assert msg
+    assert msg.channel == "#channelname"
+    assert msg.topic == "let's test"
 
 
 def test_parse_messages() -> None:
