@@ -1,11 +1,9 @@
-import re
-import time
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict
 
 from irckaaja.protocol import User
 
 if TYPE_CHECKING:
-    from irckaaja.client import IrcClient
+    from irckaaja.client import IrcClient  # pragma: no cover
 
 
 class BotScript:
@@ -28,19 +26,10 @@ class BotScript:
         # usage: self.partChannel(channel_name, reason = "")
         self.leave_channel = client.leave_channel
 
-    def sleep(self, seconds: float) -> None:
-        """
-        Sleeps for seconds unless not self.alive.
-        """
-        start = time.monotonic()
-        while time.monotonic() < start + seconds and self.alive:
-            time.sleep(1)
-
     def kill(self) -> None:
         self.alive = False
 
     # Implement methods below in the subclass to subscribe to events.
-
     def on_channel_message(
         self, user: User, channel_name: str, message: str
     ) -> None:
@@ -77,7 +66,3 @@ class BotScript:
         """
         Called when topic has changed on a channel.
         """
-
-    @staticmethod
-    def parse_urls(string: str) -> List[Any]:
-        return re.findall(r"(https?://\S+)", string)
