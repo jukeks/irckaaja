@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional
 from irckaaja.botscript import BotScript
 
 if TYPE_CHECKING:
-    from irckaaja.client import IrcClient
+    from irckaaja.client import IrcClient  # pragma: no cover
 
 
 class DynamicModule:
