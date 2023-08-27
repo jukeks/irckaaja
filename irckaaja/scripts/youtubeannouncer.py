@@ -5,6 +5,7 @@ from typing import Any, List
 from xml.dom import minidom
 
 from irckaaja.botscript import BotScript, User
+from irckaaja.scripts.urls import parse_urls
 
 APIURL = "http://gdata.youtube.com/feeds/api/videos/"
 
@@ -23,7 +24,7 @@ class YoutubeAnnouncer(BotScript):
 
     @staticmethod
     def _parse_ids(message: str) -> List[str]:
-        urls = BotScript.parse_urls(message)
+        urls = parse_urls(message)
         if not urls:
             return []
         ids = []

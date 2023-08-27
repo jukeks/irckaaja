@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple
 
 from irckaaja.botscript import BotScript, User
 from irckaaja.client import IrcClient
+from irckaaja.scripts.urls import parse_urls
 
 
 def serialize(ts: float, nick: str, message: str) -> bytes:
@@ -81,7 +82,7 @@ class IrcLinkHistory(BotScript):
         channel_name: str,
         message: str,
     ) -> None:
-        urls = self.parse_urls(message)
+        urls = parse_urls(message)
 
         if not urls:
             return
