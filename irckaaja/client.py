@@ -1,6 +1,6 @@
 import time
 from threading import Thread
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, cast
 
 from irckaaja.channel import IrcChannel
 from irckaaja.config import BotConfig, ScriptConfig, ServerConfig
@@ -62,45 +62,36 @@ class IrcClient:
     def _route_message(self, parsed: ParsedMessage) -> None:
         type = parsed.type
 
+        if parsed.message is None:
+            self._unknown_message_received(parsed.raw_message or "")
+            return
+
         if type == MessageType.PRIVATE_MESSAGE:
-            assert parsed.private_message
-            self._private_message_received(parsed.private_message)
+            self._private_message_received(cast(PrivateMessage, parsed.message))
         elif type == MessageType.JOIN:
-            assert parsed.join_message
-            self._join_received(parsed.join_message)
+            self._join_received(cast(JoinMessage, parsed.message))
         elif type == MessageType.PART:
-            assert parsed.part_message
-            self._part_received(parsed.part_message)
+            self._part_received(cast(PartMessage, parsed.message))
         elif type == MessageType.PING:
-            assert parsed.ping_message
-            self._ping_received(parsed.ping_message)
+            self._ping_received(cast(PingMessage, parsed.message))
         elif type == MessageType.QUIT:
-            assert parsed.quit_message
-            self._quit_received(parsed.quit_message)
+            self._quit_received(cast(QuitMessage, parsed.message))
         elif type == MessageType.TOPIC:
-            assert parsed.topic_message
-            self._topic_received(parsed.topic_message)
+            self._topic_received(cast(TopicMessage, parsed.message))
         elif type == MessageType.END_OF_MOTD:
-            assert parsed.end_of_motd_message
-            self._motd_received(parsed.end_of_motd_message)
+            self._motd_received(cast(EndOfMotdMessage, parsed.message))
         elif type == MessageType.TOPIC_REPLY:
-            assert parsed.topic_reply_message
-            self._topic_reply_received(parsed.topic_reply_message)
+            self._topic_reply_received(cast(TopicReplyMessage, parsed.message))
         elif type == MessageType.USERS:
-            assert parsed.users_message
-            self._users_received(parsed.users_message)
+            self._users_received(cast(UsersMessage, parsed.message))
         elif type == MessageType.END_OF_USERS:
-            assert parsed.users_end_message
-            self._users_end_received(parsed.users_end_message)
+            self._users_end_received(cast(UsersEndMessage, parsed.message))
         elif type == MessageType.CHANNEL_MESSAGE:
-            assert parsed.channel_message
-            self._channel_message_received(parsed.channel_message)
-        elif type == MessageType.UNKNOWN:
-            assert parsed.raw_message
-            self._unknown_message_received(parsed.raw_message)
+            self._channel_message_received(cast(ChannelMessage, parsed.message))
         elif type == MessageType.CTCP_VERSION:
-            assert parsed.ctcp_version_message
-            self._ctcp_version_received(parsed.ctcp_version_message)
+            self._ctcp_version_received(
+                cast(CTCPVersionMessage, parsed.message)
+            )
         elif type in [
             MessageType.CTCP_TIME,
             MessageType.CTCP_VERSION,

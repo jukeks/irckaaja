@@ -29,91 +29,95 @@ class User:
     full_mask: str
 
 
+class Message:
+    pass
+
+
 @dataclass
-class PrivateMessage:
+class PrivateMessage(Message):
     source: User
     message: str
 
 
 @dataclass
-class ChannelMessage:
+class ChannelMessage(Message):
     source: User
     message: str
     channel: str
 
 
 @dataclass
-class JoinMessage:
+class JoinMessage(Message):
     user: User
     channel: str
 
 
 @dataclass
-class PartMessage:
+class PartMessage(Message):
     user: User
     channel: str
 
 
 @dataclass
-class QuitMessage:
+class QuitMessage(Message):
     user: User
     message: Optional[str]
 
 
 @dataclass
-class TopicMessage:
+class TopicMessage(Message):
     user: User
     channel: str
     topic: str
 
 
 @dataclass
-class TopicReplyMessage:
+class TopicReplyMessage(Message):
     nick: str
     channel: str
     topic: str
 
 
 @dataclass
-class PingMessage:
+class PingMessage(Message):
     message: str
 
 
 @dataclass
-class PongMessage:
+class PongMessage(Message):
     message: str
 
 
 @dataclass
-class UsersMessage:
+class UsersMessage(Message):
     channel: str
     users: List[str]
 
 
 @dataclass
-class UsersEndMessage:
+class UsersEndMessage(Message):
     channel: str
 
 
 @dataclass
-class EndOfMotdMessage:
+class EndOfMotdMessage(Message):
     message: str
 
 
 @dataclass
-class CTCPVersionMessage:
+class CTCPVersionMessage(Message):
     user: User
 
 
 @dataclass
-class CTCPPingMessage:
+class CTCPPingMessage(Message):
     user: User
     id: str
     time: str
 
 
 @dataclass
-class CTCPTimeMessage:
+class CTCPTimeMessage(Message):
     user: User
 
 
@@ -125,23 +129,7 @@ class CTCPDCCMessage:
 @dataclass
 class ParsedMessage:
     type: MessageType
-
-    private_message: Optional[PrivateMessage] = None
-    channel_message: Optional[ChannelMessage] = None
-    ping_message: Optional[PingMessage] = None
-    pong_message: Optional[PongMessage] = None
-    join_message: Optional[JoinMessage] = None
-    part_message: Optional[PartMessage] = None
-    quit_message: Optional[QuitMessage] = None
-    topic_message: Optional[TopicMessage] = None
-    topic_reply_message: Optional[TopicReplyMessage] = None
-    users_message: Optional[UsersMessage] = None
-    users_end_message: Optional[UsersEndMessage] = None
-    end_of_motd_message: Optional[EndOfMotdMessage] = None
-    ctcp_version_message: Optional[CTCPVersionMessage] = None
-    ctcp_ping_message: Optional[CTCPPingMessage] = None
-    ctcp_time_message: Optional[CTCPTimeMessage] = None
-    ctcp_dcc_message: Optional[CTCPDCCMessage] = None
+    message: Optional[Message] = None
 
     raw_message: Optional[str] = None
     prefix: Optional[str] = None
@@ -280,7 +268,7 @@ class MessageParser:
         if target.startswith("#") or target.startswith("!"):
             return ParsedMessage(
                 type=MessageType.CHANNEL_MESSAGE,
-                channel_message=ChannelMessage(
+                message=ChannelMessage(
                     source=source,
                     channel=target,
                     message=message,
@@ -288,7 +276,7 @@ class MessageParser:
             )
         return ParsedMessage(
             type=MessageType.PRIVATE_MESSAGE,
-            private_message=PrivateMessage(
+            message=PrivateMessage(
                 source=source,
                 message=message,
             ),
@@ -298,7 +286,7 @@ class MessageParser:
         channel = params[0]
         return ParsedMessage(
             type=MessageType.JOIN,
-            join_message=JoinMessage(
+            message=JoinMessage(
                 user=parse_full_mask(full_mask), channel=channel
             ),
         )
@@ -307,7 +295,7 @@ class MessageParser:
         channel = params[0]
         return ParsedMessage(
             type=MessageType.PART,
-            part_message=PartMessage(
+            message=PartMessage(
                 user=parse_full_mask(full_mask), channel=channel
             ),
         )
@@ -315,7 +303,7 @@ class MessageParser:
     def parse_ping(self, _: str, params: List[str]) -> ParsedMessage:
         message = params[0]
         return ParsedMessage(
-            type=MessageType.PING, ping_message=PingMessage(message=message)
+            type=MessageType.PING, message=PingMessage(message=message)
         )
 
     def parse_quit(self, full_mask: str, params: List[str]) -> ParsedMessage:
@@ -324,7 +312,7 @@ class MessageParser:
 
         return ParsedMessage(
             type=MessageType.QUIT,
-            quit_message=QuitMessage(user=user, message=message),
+            message=QuitMessage(user=user, message=message),
         )
 
     def parse_users(self, _: str, params: List[str]) -> ParsedMessage:
@@ -335,7 +323,7 @@ class MessageParser:
         user_list = raw_user_list.split(" ")
         return ParsedMessage(
             type=MessageType.USERS,
-            users_message=UsersMessage(channel=channel, users=user_list),
+            message=UsersMessage(channel=channel, users=user_list),
         )
 
     def parse_users_end(self, _: str, params: List[str]) -> ParsedMessage:
@@ -350,7 +338,7 @@ class MessageParser:
 
         return ParsedMessage(
             type=MessageType.END_OF_USERS,
-            users_end_message=UsersEndMessage(channel=channel),
+            message=UsersEndMessage(channel=channel),
         )
 
     def parse_end_of_motd(self, _: str, params: List[str]) -> ParsedMessage:
@@ -360,7 +348,7 @@ class MessageParser:
         message = params[0]
         return ParsedMessage(
             type=MessageType.END_OF_MOTD,
-            end_of_motd_message=EndOfMotdMessage(message=message),
+            message=EndOfMotdMessage(message=message),
         )
 
     def parse_topic(self, full_mask: str, params: List[str]) -> ParsedMessage:
@@ -371,10 +359,10 @@ class MessageParser:
         channel, topic = params
         return ParsedMessage(
             type=MessageType.TOPIC,
-            topic_message=TopicMessage(
+            message=TopicMessage(
                 user=user,
                 channel=channel,
-                topic=topic.lstrip(":"),
+                topic=topic,
             ),
         )
 
@@ -385,9 +373,9 @@ class MessageParser:
         nick, channel, topic = params
         return ParsedMessage(
             type=MessageType.TOPIC_REPLY,
-            topic_reply_message=TopicReplyMessage(
+            message=TopicReplyMessage(
                 nick=nick,
                 channel=channel,
-                topic=topic.lstrip(":"),
+                topic=topic,
             ),
         )

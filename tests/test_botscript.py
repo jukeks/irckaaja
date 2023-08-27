@@ -68,9 +68,7 @@ def test_client_calls_script_on_private_message() -> None:
         [
             ParsedMessage(
                 type=MessageType.PRIVATE_MESSAGE,
-                private_message=PrivateMessage(
-                    source=get_user(), message="Hello!"
-                ),
+                message=PrivateMessage(source=get_user(), message="Hello!"),
             )
         ]
     )
@@ -84,7 +82,7 @@ def test_client_calls_script_on_channel_message() -> None:
         [
             ParsedMessage(
                 type=MessageType.CHANNEL_MESSAGE,
-                channel_message=ChannelMessage(
+                message=ChannelMessage(
                     source=get_user(), message="Hello!", channel="#testers"
                 ),
             )
@@ -100,7 +98,7 @@ def test_client_calls_script_on_join() -> None:
         [
             ParsedMessage(
                 type=MessageType.JOIN,
-                join_message=JoinMessage(user=get_user(), channel="#testers"),
+                message=JoinMessage(user=get_user(), channel="#testers"),
             )
         ]
     )
@@ -114,17 +112,15 @@ def test_client_calls_script_on_part() -> None:
         [
             ParsedMessage(
                 type=MessageType.USERS,
-                users_message=UsersMessage(
-                    channel="#testers", users=["tester"]
-                ),
+                message=UsersMessage(channel="#testers", users=["tester"]),
             ),
             ParsedMessage(
                 type=MessageType.END_OF_USERS,
-                users_end_message=UsersEndMessage(channel="#testers"),
+                message=UsersEndMessage(channel="#testers"),
             ),
             ParsedMessage(
                 type=MessageType.PART,
-                part_message=PartMessage(user=get_user(), channel="#testers"),
+                message=PartMessage(user=get_user(), channel="#testers"),
             ),
         ]
     )
@@ -138,17 +134,15 @@ def test_client_calls_script_on_quit() -> None:
         [
             ParsedMessage(
                 type=MessageType.USERS,
-                users_message=UsersMessage(
-                    channel="#testers", users=["tester"]
-                ),
+                message=UsersMessage(channel="#testers", users=["tester"]),
             ),
             ParsedMessage(
                 type=MessageType.END_OF_USERS,
-                users_end_message=UsersEndMessage(channel="#testers"),
+                message=UsersEndMessage(channel="#testers"),
             ),
             ParsedMessage(
                 type=MessageType.QUIT,
-                quit_message=QuitMessage(user=get_user(), message="leaving"),
+                message=QuitMessage(user=get_user(), message="leaving"),
             ),
         ]
     )
@@ -162,7 +156,7 @@ def test_client_calls_script_on_connect() -> None:
         [
             ParsedMessage(
                 type=MessageType.END_OF_MOTD,
-                end_of_motd_message=EndOfMotdMessage(message="welcome"),
+                message=EndOfMotdMessage(message="welcome"),
             )
         ]
     )
@@ -183,7 +177,7 @@ def test_client_calls_script_on_topic() -> None:
         [
             ParsedMessage(
                 type=MessageType.TOPIC,
-                topic_message=TopicMessage(
+                message=TopicMessage(
                     user=get_user(), channel="#testers", topic="welcome"
                 ),
             )
@@ -199,7 +193,7 @@ def test_client_calls_script_on_topic_reply() -> None:
         [
             ParsedMessage(
                 type=MessageType.TOPIC_REPLY,
-                topic_reply_message=TopicReplyMessage(
+                message=TopicReplyMessage(
                     nick=get_user().nick, channel="#testers", topic="welcome"
                 ),
             )

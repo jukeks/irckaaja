@@ -1,6 +1,20 @@
+from typing import cast
+
 from parser_tests import data as parser_test_cases
 
-from irckaaja.protocol import Atoms, MessageParser, MessageType, parse_full_mask
+from irckaaja.protocol import (
+    Atoms,
+    ChannelMessage,
+    JoinMessage,
+    MessageParser,
+    MessageType,
+    PartMessage,
+    PrivateMessage,
+    QuitMessage,
+    UsersEndMessage,
+    UsersMessage,
+    parse_full_mask,
+)
 
 
 def test_private_message() -> None:
@@ -10,9 +24,10 @@ def test_private_message() -> None:
     assert parsed
 
     assert parsed.type == MessageType.PRIVATE_MESSAGE
-    assert parsed.private_message
-    assert parsed.private_message.source.nick == "juke"
-    assert parsed.private_message.message == "lol"
+    assert parsed.message
+    msg = cast(PrivateMessage, parsed.message)
+    assert msg.source.nick == "juke"
+    assert msg.message == "lol"
 
 
 def test_channel_message() -> None:
@@ -21,7 +36,7 @@ def test_channel_message() -> None:
     parsed = parser.parse_message(channel_msg)
     assert parsed
     assert parsed.type == MessageType.CHANNEL_MESSAGE
-    msg = parsed.channel_message
+    msg = cast(ChannelMessage, parsed.message)
     assert msg
     assert msg.source.nick == "juke"
     assert msg.message == "asdfadsf"
@@ -40,7 +55,7 @@ def test_users_message() -> None:
     parsed = parser.parse_message(message)
     assert parsed
     assert parsed.type == MessageType.USERS
-    msg = parsed.users_message
+    msg = cast(UsersMessage, parsed.message)
     assert msg
     assert msg.channel == "#channelname"
     assert msg.users == ["yournick", "@juke"]
@@ -52,7 +67,7 @@ def test_users_end_message() -> None:
     parsed = parser.parse_message(message)
     assert parsed
     assert parsed.type == MessageType.END_OF_USERS
-    msg = parsed.users_end_message
+    msg = cast(UsersEndMessage, parsed.message)
     assert msg
     assert msg.channel == "#channelname"
 
@@ -65,7 +80,7 @@ def test_join_message() -> None:
     parsed = parser.parse_message(message1)
     assert parsed
     assert parsed.type == MessageType.JOIN
-    msg = parsed.join_message
+    msg = cast(JoinMessage, parsed.message)
     assert msg
     assert msg.user.nick == "nick1"
     assert msg.channel == "#channel"
@@ -73,7 +88,7 @@ def test_join_message() -> None:
     parsed = parser.parse_message(message2)
     assert parsed
     assert parsed.type == MessageType.JOIN
-    msg = parsed.join_message
+    msg = cast(JoinMessage, parsed.message)
     assert msg
     assert msg.user.nick == "nick2"
     assert msg.channel == "!channel"
@@ -85,7 +100,7 @@ def test_part_message() -> None:
     parsed = parser.parse_message(message)
     assert parsed
     assert parsed.type == MessageType.PART
-    msg = parsed.part_message
+    msg = cast(PartMessage, parsed.message)
     assert msg
     assert msg.user.nick == "nick"
     assert msg.channel == "#channeltv"
@@ -97,7 +112,7 @@ def test_quit_message() -> None:
     parsed = parser.parse_message(message)
     assert parsed
     assert parsed.type == MessageType.QUIT
-    msg = parsed.quit_message
+    msg = cast(QuitMessage, parsed.message)
     assert msg
     assert msg.user.nick == "nick"
 
