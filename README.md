@@ -112,6 +112,8 @@ Example configuration:
         hostname = se.quakenet.org
         port = 6667 # if port is no defined, default is 6667
         channels = "#example1", "#example2"
+        # use_tls: true # if not defined, default is false
+        # ca_path: "path" # use to trust additional CAs
     #[[IRCNet]]
     #    hostname = irc.cs.hut.fi
 
