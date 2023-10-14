@@ -10,10 +10,8 @@ from irckaaja.protocol import MessageType
 
 
 def test_connection() -> None:
-    ld = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ld.bind(("", 0))
+    ld = socket.create_server(("localhost", 0), reuse_port=True)
     hostname, port = ld.getsockname()
-    ld.listen()
 
     client = IrcConnection(
         hostname, port, use_tls=False, timeout=timedelta(milliseconds=1)
@@ -39,10 +37,8 @@ def test_connection() -> None:
 
 
 def test_tls_connection() -> None:
-    ld = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ld.bind(("localhost", 0))
+    ld = socket.create_server(("localhost", 0), reuse_port=True)
     hostname, port = ld.getsockname()
-    ld.listen()
 
     context = ssl.create_default_context(
         purpose=ssl.Purpose.CLIENT_AUTH,
