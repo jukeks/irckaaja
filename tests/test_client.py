@@ -22,6 +22,7 @@ def get_test_client(host: str, port: int) -> IrcClient:
             hostname=host,
             port=port,
             channels=["#test"],
+            use_tls=False,
         ),
         bot_config=BotConfig(
             nick="test",

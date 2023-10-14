@@ -1,6 +1,7 @@
 import socket
+import ssl
 from datetime import timedelta
-from typing import List
+from typing import List, Optional
 
 from irckaaja.protocol import MessageParser, ParsedMessage
 
@@ -14,11 +15,15 @@ class IrcConnection:
         self,
         hostname: str,
         port: int,
+        use_tls: bool,
+        cafile: Optional[str] = None,
         timeout: timedelta = timedelta(seconds=1),
     ) -> None:
         self._hostname = hostname
         self._port = port
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._use_tls = use_tls
+        self._cafile = cafile
         self._buff = ""
         self._parser = MessageParser()
         self._encoding = "utf-8"
@@ -26,6 +31,11 @@ class IrcConnection:
 
     def connect(self) -> None:
         self._socket.connect((self._hostname, self._port))
+        if self._use_tls:
+            ssl_context = ssl.create_default_context(cafile=self._cafile)
+            self._socket = ssl_context.wrap_socket(
+                self._socket, server_hostname=self._hostname
+            )
         self._socket.settimeout(self._timeout)
 
     def write(self, message: str) -> None:
