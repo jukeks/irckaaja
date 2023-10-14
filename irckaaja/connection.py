@@ -18,6 +18,7 @@ class IrcConnection:
         use_tls: bool,
         cafile: Optional[str] = None,
         timeout: timedelta = timedelta(seconds=1),
+        connect_timeout: timedelta = timedelta(seconds=10),
     ) -> None:
         self._hostname = hostname
         self._port = port
@@ -28,9 +29,12 @@ class IrcConnection:
         self._parser = MessageParser()
         self._encoding = "utf-8"
         self._timeout = timeout.total_seconds()
+        self._connect_timeout = connect_timeout.total_seconds()
 
     def connect(self) -> None:
-        self._socket.connect((self._hostname, self._port))
+        self._socket = socket.create_connection(
+            (self._hostname, self._port), self._connect_timeout
+        )
         if self._use_tls:
             ssl_context = ssl.create_default_context(cafile=self._cafile)
             self._socket = ssl_context.wrap_socket(
