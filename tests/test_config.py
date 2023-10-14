@@ -51,8 +51,10 @@ def test_server_config(tmp_path: pathlib.Path) -> None:
         hostname = hostname1
         port = 6667
         channels = "#testers"
+        use_tls = false
     [[Server2]]
         hostname = hostname2
+        use_tls = true
     """
 
     p = tmp_path / "config.ini"
@@ -66,6 +68,7 @@ def test_server_config(tmp_path: pathlib.Path) -> None:
         hostname="hostname1",
         port=6667,
         channels=["#testers"],
+        use_tls=False,
     )
     s2 = servers["Server2"]
     assert s2 == ServerConfig(
@@ -73,6 +76,7 @@ def test_server_config(tmp_path: pathlib.Path) -> None:
         hostname="hostname2",
         port=6667,
         channels=[],
+        use_tls=True,
     )
 
 

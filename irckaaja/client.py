@@ -46,7 +46,10 @@ class IrcClient:
 
         self._reader_thread = Thread(target=self._connection_loop)
         self._connection = IrcConnection(
-            self.server_config.hostname, self.server_config.port
+            self.server_config.hostname,
+            self.server_config.port,
+            self.server_config.use_tls,
+            self.server_config.ca_path,
         )
 
         self._channel_list: List[IrcChannel] = []
@@ -112,7 +115,10 @@ class IrcClient:
             try:
                 self._connection.close()
                 self._connection = IrcConnection(
-                    self.server_config.hostname, self.server_config.port
+                    self.server_config.hostname,
+                    self.server_config.port,
+                    self.server_config.use_tls,
+                    self.server_config.ca_path,
                 )
                 self._connection.connect()
 

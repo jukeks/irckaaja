@@ -29,6 +29,7 @@ def get_server_config() -> ServerConfig:
         hostname="example.org",
         port=6666,
         channels=[],
+        use_tls=False,
     )
 
 

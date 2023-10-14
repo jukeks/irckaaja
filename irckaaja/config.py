@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from configobj import ConfigObj
 
@@ -9,9 +9,11 @@ CONFIG_FILENAME = "config.ini"
 @dataclass
 class ServerConfig:
     name: str
+    channels: list[str]
     hostname: str
     port: int
-    channels: list[str]
+    use_tls: bool
+    ca_path: Optional[str] = None
 
 
 @dataclass
@@ -52,11 +54,18 @@ class Config:
             else:
                 channels = channels_raw
 
+            use_tls_raw = server.get("use_tls", "False")
+            use_tls = False
+            if use_tls_raw.lower() == "true":
+                use_tls = True
+
             config[alias] = ServerConfig(
                 name=alias,
                 hostname=server["hostname"],
                 port=int(server.get("port", "6667")),
                 channels=channels,
+                use_tls=use_tls,
+                ca_path=server.get("ca_path"),
             )
         return config
 
