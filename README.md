@@ -1,5 +1,7 @@
 # Irckaaja
 
+[![Python application](https://github.com/jukeks/irckaaja/actions/workflows/ci.yml/badge.svg)](https://github.com/jukeks/irckaaja/actions/workflows/ci.yml)
+
 A scriptable IRC bot with a Python interface.
 
 ## Table of Contents
