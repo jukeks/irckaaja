@@ -1,6 +1,6 @@
 __author__ = "juke"
 import re
-import urllib
+import urllib.request
 from typing import Any, List
 from xml.dom import minidom
 

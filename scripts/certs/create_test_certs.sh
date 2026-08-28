@@ -3,7 +3,7 @@
 # source: https://gist.github.com/cecilemuller/9492b848eb8fe46d462abeb26656c4f8
 
 # create CA
-openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout localhost.ca.key -out localhost.ca.pem -subj "/C=US/CN=Example-Root-CA"
+openssl req -x509 -nodes -new -sha256 -days 1024 -newkey rsa:2048 -keyout localhost.ca.key -out localhost.ca.pem -subj "/C=US/CN=Example-Root-CA" -addext "basicConstraints=critical,CA:TRUE" -addext "keyUsage=critical,keyCertSign,cRLSign"
 
 # create SANs for localhost
 echo "authorityKeyIdentifier=keyid,issuer
