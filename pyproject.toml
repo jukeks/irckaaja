@@ -1,33 +1,43 @@
-[tool.poetry]
+[project]
 name = "irckaaja"
 version = "0.3.0"
 description = ""
-authors = ["Jukka-Pekka Virtanen <virtanen@jukk.is>"]
+authors = [
+    { name = "Jukka-Pekka Virtanen", email = "virtanen@jukk.is" },
+]
 readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "configobj",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-configobj = "*"
+[dependency-groups]
+dev = [
+    "pre-commit",
+    "black",
+    "flake8",
+    "isort",
+    "autoflake",
+    "mypy<2",
+    "pyupgrade",
+    "setuptools",
+    "pytest",
+    "build",
+    "twine",
+    "pytest-cov",
+    "irc-parser-tests",
+]
 
 [tool.mypy]
 python_version = "3.9"
 disallow_untyped_defs = "True"
 ignore_missing_imports = "True"
+exclude = ["^\\.venv/"]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "*"
-black = "*"
-flake8 = "*"
-isort = "*"
-autoflake = "*"
-mypy = "*"
-pyupgrade = "*"
-setuptools = "*"
-pytest = "*"
-build = "*"
-twine = "*"
-pytest-cov = "*"
-irc-parser-tests = "*"
+# pytest's own sources use 3.10+ syntax, which mypy parses under our 3.9 target
+[[tool.mypy.overrides]]
+module = ["pytest.*", "_pytest.*"]
+follow_imports = "skip"
 
 [tool.black]
 line-length = 80
@@ -40,8 +50,11 @@ profile = "black"
 max-line-length = 80
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["irckaaja"]
 
 [tool.coverage.run]
 source = ["irckaaja"]
